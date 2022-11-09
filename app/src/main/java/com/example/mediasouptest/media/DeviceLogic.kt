@@ -9,45 +9,48 @@ import org.protoojs.droid.Peer
 import java.util.concurrent.CountDownLatch
 
 class DeviceLogic(val mProtoo: Protoo, val mOptions: RoomOptions) {
-    private val mMediasoupDevice: Device
+    private var mMediasoupDevice: Device?=null
     private val sendTransportLogic = SendTransportLogic()
 
     init {
-        val countDownLatch = CountDownLatch(1)
+        //val countDownLatch = CountDownLatch(1)
 
         try {
             mProtoo.request("getRouterRtpCapabilities", JSONObject(), object: Peer.ClientRequestHandler {
                 override fun resolve(data: String?) {
                     Log.d(TAG, "resolve() called with: data = $data")
-                    countDownLatch.countDown()
+                    //countDownLatch.countDown()
+                    mMediasoupDevice = Device()
                 }
 
                 override fun reject(error: Long, errorReason: String?) {
                     Log.d(TAG, "reject() called with: error = $error, errorReason = $errorReason")
-                    countDownLatch.countDown()
+                    //countDownLatch.countDown()
                 }
             })
         }catch (e: Exception){
-            countDownLatch.countDown()
+            //countDownLatch.countDown()
         }
 
-        countDownLatch.await()
+        //countDownLatch.await()
 
 
 
-        mMediasoupDevice = Device()
+
 /*        val routerRtpCapabilities = mProtoo.syncRequest("getRouterRtpCapabilities")
         mMediasoupDevice.load(routerRtpCapabilities, null)
         val rtpCapabilities: String = mMediasoupDevice.getRtpCapabilities()*/
     }
 
     fun createSendTransport() {
-        sendTransportLogic.createSendTransport(mMediasoupDevice, mProtoo, mOptions)
+        mMediasoupDevice?.let {
+            sendTransportLogic.createSendTransport(it, mProtoo, mOptions)
+        }
     }
 
     fun end() {
         sendTransportLogic.end()
-        mMediasoupDevice.dispose()
+        mMediasoupDevice?.dispose()
     }
 
     companion object{

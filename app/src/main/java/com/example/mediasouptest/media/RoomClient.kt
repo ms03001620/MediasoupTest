@@ -40,10 +40,10 @@ class RoomClient {
 
 
         // init worker handler.
-        val handlerThread = HandlerThread("worker")
+        val handlerThread = HandlerThread("worke11r")
         handlerThread.start()
         mWorkHandler = Handler(handlerThread.looper)
-        mMainHandler = Handler(Looper.getMainLooper())
+        //mMainHandler = Handler(Looper.getMainLooper())
     }
 
     fun start() {
@@ -62,8 +62,15 @@ class RoomClient {
             try {
                 assert(mProtoo != null)
                 mWorkHandler?.post {
-                    deviceLogic = DeviceLogic(mProtoo!!, roomClientConfig.roomOptions)
+                    val isMain = Looper.getMainLooper() == Looper.myLooper()
+                    Log.d(TAG, "is Main:$isMain")
+
                 }
+
+                deviceLogic = DeviceLogic(mProtoo!!, roomClientConfig.roomOptions)
+
+
+
 
 
 
@@ -92,7 +99,7 @@ class RoomClient {
         }
 
         override fun onClose() {
-            TODO("Not yet implemented")
+            Log.d(TAG, "onClose() called")
         }
     }
     companion object{

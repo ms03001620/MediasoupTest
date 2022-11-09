@@ -19,13 +19,13 @@ class MainViewModel: ViewModel() {
     }
 
     fun initSdk() {
-/*        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            roomClient = RoomClient()
+            roomClient?.init(roomClientConfig)
+            roomClient?.start()
+        }
 
-        }*/
 
-        roomClient = RoomClient()
-        roomClient?.init(roomClientConfig)
-        roomClient?.start()
     }
 
     fun close() {
