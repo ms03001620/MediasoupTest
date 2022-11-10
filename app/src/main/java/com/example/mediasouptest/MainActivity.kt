@@ -42,6 +42,9 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.peersLiveData.observe(this) {
             adapter.setPeers(it)
         }
+        mainViewModel.onNewConsumer.observe(this){
+            adapter.onNewConsumer(it)
+        }
     }
 
     private fun initEvent() {
