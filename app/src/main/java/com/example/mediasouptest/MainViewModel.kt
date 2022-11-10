@@ -24,8 +24,6 @@ class MainViewModel: ViewModel() {
             roomClient?.init(roomClientConfig)
             roomClient?.start()
         }
-
-
     }
 
     fun close() {

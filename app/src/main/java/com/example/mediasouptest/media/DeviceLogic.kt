@@ -1,56 +1,34 @@
 package com.example.mediasouptest.media
 
-import android.util.Log
 import org.json.JSONObject
 import org.mediasoup.droid.Device
-import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.RoomOptions
-import org.protoojs.droid.Peer
-import java.util.concurrent.CountDownLatch
 
-class DeviceLogic(val mProtoo: Protoo, val mOptions: RoomOptions) {
-    private var mMediasoupDevice: Device?=null
+class DeviceLogic(
+    private val mOptions: RoomOptions,
+    private val routerRtpCapabilities: String
+) {
+    private val device = Device()
     private val sendTransportLogic = SendTransportLogic()
+    private val recvTransportLogic = RecvTransportLogic()
+
+    private val rtpCapabilities: String
 
     init {
-        //val countDownLatch = CountDownLatch(1)
-
-        try {
-            mProtoo.request("getRouterRtpCapabilities", JSONObject(), object: Peer.ClientRequestHandler {
-                override fun resolve(data: String?) {
-                    Log.d(TAG, "resolve() called with: data = $data")
-                    //countDownLatch.countDown()
-                    mMediasoupDevice = Device()
-                }
-
-                override fun reject(error: Long, errorReason: String?) {
-                    Log.d(TAG, "reject() called with: error = $error, errorReason = $errorReason")
-                    //countDownLatch.countDown()
-                }
-            })
-        }catch (e: Exception){
-            //countDownLatch.countDown()
-        }
-
-        //countDownLatch.await()
-
-
-
-
-/*        val routerRtpCapabilities = mProtoo.syncRequest("getRouterRtpCapabilities")
-        mMediasoupDevice.load(routerRtpCapabilities, null)
-        val rtpCapabilities: String = mMediasoupDevice.getRtpCapabilities()*/
+        device.load(routerRtpCapabilities, null)
+        rtpCapabilities = device.rtpCapabilities
     }
 
-    fun createSendTransport() {
-        mMediasoupDevice?.let {
-            sendTransportLogic.createSendTransport(it, mProtoo, mOptions)
-        }
-    }
+    fun createSendTransport(info: JSONObject, callback: OnCreateSendTransportEvent) =
+        sendTransportLogic.createSendTransport(device, info, callback)
+
+    fun createRecvTransport(info: JSONObject, callback: OnCreateRecvTransportEvent) =
+        recvTransportLogic.createRecvTransport(device, info, callback)
 
     fun end() {
         sendTransportLogic.end()
-        mMediasoupDevice?.dispose()
+        recvTransportLogic.end()
+        device.dispose()
     }
 
     companion object{
