@@ -22,6 +22,7 @@ class RoomClient {
     private var localDeviceHelper: LocalDeviceHelper? = null
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
+    private var onRoomClientEvent: OnRoomClientEvent? = null
 
     fun init(roomClientConfig: RoomClientConfig) {
         this.roomClientConfig = roomClientConfig
@@ -77,6 +78,7 @@ class RoomClient {
                             })?.let {
                                 roomMessageHandler.add(it)
                                 handler.accept()
+                                onRoomClientEvent?.onNewConsumer(it)
                                 attemptAudioOnly(it)
                             }
                         }
@@ -289,10 +291,9 @@ class RoomClient {
         this.onRoomClientEvent = onRoomClientEvent
     }
 
-    var onRoomClientEvent: OnRoomClientEvent? = null
-
     public interface OnRoomClientEvent {
         fun onLoadPeers(peers: ArrayList<org.mediasoup.droid.lib.model.Peer>)
+        fun onNewConsumer(consumerHolder: ConsumerHolder)
     }
 
     companion object {

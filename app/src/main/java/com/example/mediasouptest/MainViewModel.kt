@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.media.RoomClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,6 +16,7 @@ class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
     var roomClient: RoomClient? = null
+    val onNewConsumer = SingleLiveEvent<ConsumerHolder>()
 
     fun loadConfig(context: Context) {
         roomClientConfig.loadFromShare(context)
@@ -35,13 +37,16 @@ class MainViewModel: ViewModel() {
         override fun onLoadPeers(peers: ArrayList<Peer>) {
             peersLiveData.postValue(peers)
         }
+
+        override fun onNewConsumer(consumerHolder: ConsumerHolder) {
+            onNewConsumer.postValue(consumerHolder)
+        }
     }
 
     fun close() {
         viewModelScope.launch(Dispatchers.IO) {
             roomClient?.end()
         }
-
     }
 
     fun join() {
