@@ -1,14 +1,17 @@
 package com.example.mediasouptest.media
 
 import org.json.JSONObject
+import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.demo.RoomClientConfig
+import org.mediasoup.droid.lib.JsonUtils.toJsonObject
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.UrlFactory
 import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
+import org.protoojs.droid.Peer.ClientRequestHandler
 import java.util.concurrent.CountDownLatch
 
 class RoomClient {
@@ -22,7 +25,7 @@ class RoomClient {
         this.roomClientConfig = roomClientConfig
         val configData = roomClientConfig.data
         mProtooUrl = UrlFactory.getProtooUrl(
-            configData.roomId,
+            /*configData.roomId*/"c5bwfyow",
             configData.peerId,
             configData.forceH264,
             configData.forceVp9
@@ -46,6 +49,8 @@ class RoomClient {
     }
 
     private fun createPeerListener() =  object : Peer.Listener {
+        val roomMessageHandler = RoomMessageHandler()
+
         override fun onOpen() {
             requestRouterRtpCapabilities()
         }
@@ -55,15 +60,45 @@ class RoomClient {
         }
 
         override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
-            TODO("Not yet implemented")
+            try {
+                when (request.method) {
+                    "newConsumer" -> {
+                        if (!roomClientConfig.roomOptions.isConsume) {
+                            handler.reject(-1, "I do not want to consume")
+                        } else {
+                            deviceLogic?.onNewConsumer(request, object : Consumer.Listener {
+                                override fun onTransportClose(consumer: Consumer) {
+                                    roomMessageHandler.remove(consumer.id).let {
+                                        Logger.d(TAG, "onTransportClose:${it?.peerId ?: ""}")
+                                    }
+                                }
+                            })?.let {
+                                roomMessageHandler.add(it)
+                                handler.accept()
+                                attemptAudioOnly(it)
+                            }
+                        }
+                    }
+                    else -> {
+                        handler.reject(-1, "unsupported:${request.method}")
+                    }
+                }
+            } catch (e: Exception) {
+                handler.reject(-1, "error: msg:${e.message} " + request.method)
+            }
         }
 
         override fun onNotification(notification: Message.Notification) {
-            TODO("Not yet implemented")
+            try {
+                roomMessageHandler.handleNotification(notification)
+            } catch (e: Exception) {
+                Logger.e(TAG, "onNotification", e)
+            }
         }
 
         override fun onDisconnected() {
-            TODO("Not yet implemented")
+            Logger.w(TAG, "onDisconnected")
+            end()
         }
 
         override fun onClose() {
@@ -71,10 +106,17 @@ class RoomClient {
         }
     }
 
+    private fun attemptAudioOnly(consumerHolder: ConsumerHolder) {
+        // local audio only
+        if (consumerHolder.consumer.kind == "video" && false /*audioOnly*/) {
+            requestPauseConsumer(consumerHolder.consumer)
+        }
+    }
+
     private fun requestRouterRtpCapabilities() {
         Logger.d(TAG, "requestRouterRtpCapabilities")
         mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
-            object : Peer.ClientRequestHandler {
+            object : ClientRequestHandler {
                 override fun resolve(routerRtpCapabilities: String?) {
                     Logger.d(TAG, "requestRouterRtpCapabilities resolve() $routerRtpCapabilities")
                     routerRtpCapabilities?.let {
@@ -88,7 +130,6 @@ class RoomClient {
                 }
             })
     }
-
 
     private fun requestCreateWebRtcTransport() {
         val producing = roomClientConfig.roomOptions.isProduce
@@ -169,6 +210,28 @@ class RoomClient {
         })
     }
 
+    private fun requestPauseConsumer(consumer: Consumer) {
+        Logger.d(TAG, "requestPauseConsumer ${consumer.getId()}, p:${consumer.isPaused},c:${consumer.isClosed}")
+        if (consumer.isPaused || consumer.isClosed) {
+            return
+        }
+        mProtoo?.let {
+            JSONObject().apply {
+                this.put("consumerId", consumer.id)
+            }.let {
+                mProtoo?.request("pauseConsumer", it, object: ClientRequestHandler{
+                    override fun resolve(data: String?) {
+                        consumer.pause()
+                    }
+                    override fun reject(error: Long, errorReason: String?) {
+                        Logger.e(TAG, "requestPauseConsumer reject:$error, $errorReason")
+                    }
+                })
+            }
+        }
+    }
+
+
     private fun requestProduce(info: JSONObject): String {
         Logger.d(TAG, "requestProduce")
         val countDownLatch = CountDownLatch(1)
@@ -187,6 +250,37 @@ class RoomClient {
         })
         countDownLatch.await()
         return JSONObject(response).optString("id")
+    }
+
+    fun join() {
+        assert(deviceLogic != null)
+        assert(mProtoo != null)
+        mProtoo?.let {  protoo ->
+            JSONObject().apply {
+                this.put("displayName", "Ma");
+                this.put("device", roomClientConfig.roomOptions.getDevice().toJSONObject());
+                this.put("rtpCapabilities", toJsonObject(deviceLogic?.getRtpCapabilities()));
+                // TODO sctpCapabilities
+                this.put( "sctpCapabilities", "");
+            }.let { json ->
+                protoo.request("join", json, object: ClientRequestHandler{
+                    override fun resolve(data: String?) {
+                        onJoinRoom(toJsonObject(data))
+                    }
+
+                    override fun reject(error: Long, errorReason: String?) {
+                        Logger.e(TAG, "join reject:$error, $errorReason")
+                    }
+                })
+            }
+        }
+    }
+
+    fun onJoinRoom(json: JSONObject){
+        Logger.d(TAG, "onJoinRoom ${json.toString()}")
+        val peers = json.optJSONArray("peers")
+        Logger.d(TAG, "peers size ${peers.length()}")
+
     }
 
     companion object {

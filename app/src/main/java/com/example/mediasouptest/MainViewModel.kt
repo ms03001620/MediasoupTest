@@ -15,6 +15,7 @@ class MainViewModel: ViewModel() {
 
     fun loadConfig(context: Context) {
         roomClientConfig.loadFromShare(context)
+        roomClientConfig.loadFixedRoomId()
         roomClientConfig.print()
     }
 
@@ -31,5 +32,11 @@ class MainViewModel: ViewModel() {
             roomClient?.end()
         }
 
+    }
+
+    fun join() {
+        viewModelScope.launch(Dispatchers.IO) {
+            roomClient?.join()
+        }
     }
 }

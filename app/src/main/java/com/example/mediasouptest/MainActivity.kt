@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnEnd.setOnClickListener {
             mainViewModel.close()
         }
+        binding.btnJoin.setOnClickListener {
+            mainViewModel.join()
+        }
     }
 
 

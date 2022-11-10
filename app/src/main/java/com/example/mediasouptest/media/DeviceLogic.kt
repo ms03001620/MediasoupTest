@@ -1,8 +1,11 @@
 package com.example.mediasouptest.media
 
 import org.json.JSONObject
+import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Device
 import org.mediasoup.droid.lib.RoomOptions
+import org.protoojs.droid.Message
+import org.protoojs.droid.Peer
 
 class DeviceLogic(
     private val mOptions: RoomOptions,
@@ -30,6 +33,11 @@ class DeviceLogic(
         recvTransportLogic.end()
         device.dispose()
     }
+
+    fun getRtpCapabilities() = rtpCapabilities
+
+    fun onNewConsumer(request: Message.Request,callback: Consumer.Listener) =
+        recvTransportLogic.onNewConsumer(request, callback)
 
     companion object{
         const val TAG = "DeviceLogic"
