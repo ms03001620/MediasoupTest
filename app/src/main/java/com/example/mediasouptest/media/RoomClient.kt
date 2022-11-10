@@ -33,7 +33,7 @@ class RoomClient {
 
     fun start() {
         val transport = WebSocketTransport(mProtooUrl)
-        mProtoo = Protoo(transport, peerListener)
+        mProtoo = Protoo(transport, createPeerListener())
     }
 
     fun end() {
@@ -45,7 +45,7 @@ class RoomClient {
         localDeviceHelper = null
     }
 
-    private val peerListener = object : Peer.Listener {
+    private fun createPeerListener() =  object : Peer.Listener {
         override fun onOpen() {
             requestRouterRtpCapabilities()
         }
