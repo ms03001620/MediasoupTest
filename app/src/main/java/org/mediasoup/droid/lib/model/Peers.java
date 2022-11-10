@@ -2,6 +2,7 @@ package org.mediasoup.droid.lib.model;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mediasoup.droid.Consumer;
 import org.mediasoup.droid.Logger;
@@ -20,6 +21,23 @@ public class Peers {
 
   public Peers() {
     mPeersInfo = Collections.synchronizedMap(new LinkedHashMap<>());
+  }
+
+  public static Peer createPree(@NonNull JSONObject peerInfo) throws Exception {
+    return new Peer(peerInfo);
+  }
+
+  public static ArrayList<Peer> createPeers(@NonNull JSONArray peersArray) {
+    ArrayList<Peer> peers = new ArrayList<>();
+    for (int i = 0; i < peersArray.length(); i++) {
+      try {
+        JSONObject node = peersArray.getJSONObject(i);
+        peers.add(createPree(node));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return peers;
   }
 
   public void addPeer(String peerId, @NonNull JSONObject peerInfo) {

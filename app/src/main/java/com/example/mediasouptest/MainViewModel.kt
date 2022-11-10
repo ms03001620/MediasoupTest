@@ -1,16 +1,19 @@
 package com.example.mediasouptest
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.RoomClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.demo.RoomClientConfig
+import org.mediasoup.droid.lib.model.Peer
+import java.util.ArrayList
 
 class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
-
+    val peersLiveData = MutableLiveData<List<Peer>>()
     var roomClient: RoomClient? = null
 
     fun loadConfig(context: Context) {
@@ -23,7 +26,14 @@ class MainViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             roomClient = RoomClient()
             roomClient?.init(roomClientConfig)
+            roomClient?.setRoomClientEvent(createOnRoomClientEvent())
             roomClient?.start()
+        }
+    }
+
+    private fun createOnRoomClientEvent() = object : RoomClient.OnRoomClientEvent {
+        override fun onLoadPeers(peers: ArrayList<Peer>) {
+            peersLiveData.postValue(peers)
         }
     }
 

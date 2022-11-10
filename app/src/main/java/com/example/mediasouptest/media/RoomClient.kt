@@ -8,10 +8,12 @@ import org.mediasoup.droid.lib.JsonUtils.toJsonObject
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.UrlFactory
+import org.mediasoup.droid.lib.model.Peers
 import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
+import java.util.ArrayList
 import java.util.concurrent.CountDownLatch
 
 class RoomClient {
@@ -280,7 +282,17 @@ class RoomClient {
         Logger.d(TAG, "onJoinRoom ${json.toString()}")
         val peers = json.optJSONArray("peers")
         Logger.d(TAG, "peers size ${peers.length()}")
+        onRoomClientEvent?.onLoadPeers(Peers.createPeers(peers))
+    }
 
+    fun setRoomClientEvent(onRoomClientEvent: OnRoomClientEvent) {
+        this.onRoomClientEvent = onRoomClientEvent
+    }
+
+    var onRoomClientEvent: OnRoomClientEvent? = null
+
+    public interface OnRoomClientEvent {
+        fun onLoadPeers(peers: ArrayList<org.mediasoup.droid.lib.model.Peer>)
     }
 
     companion object {
