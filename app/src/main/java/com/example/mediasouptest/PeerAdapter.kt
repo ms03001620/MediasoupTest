@@ -6,9 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mediasouptest.media.ConsumerHolder
-import org.mediasoup.droid.lib.PeerConnectionUtils
+import com.example.mediasouptest.widget.VideoWallpaper
 import org.mediasoup.droid.lib.model.Peer
-import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoTrack
 
 class PeerAdapter(private val onClick: (Peer) -> Unit) :
@@ -19,12 +18,11 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
     class PlateViewHolder(itemView: View, val onClick: (Peer) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
         private val textName: TextView = itemView.findViewById(R.id.text_name)
-        private val videoRenderer: SurfaceViewRenderer = itemView.findViewById(R.id.video_renderer)
+        private val videoWallpaper: VideoWallpaper = itemView.findViewById(R.id.video_wallpaper)
 
         var currentPlate: Peer? = null
 
         init {
-            videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
             itemView.setOnClickListener {
                 currentPlate?.let {
                     onClick(it)
@@ -34,21 +32,21 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
 
         fun bind(plate: Peer, consumerList: MutableList<ConsumerHolder>) {
             textName.text = plate.displayName + "," + plate.id
-            render(videoRenderer, plate, consumerList)
+            render(videoWallpaper, plate, consumerList)
         }
 
-        private fun render(renderer: SurfaceViewRenderer, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
+        private fun render(videoWallpaper: VideoWallpaper, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
             consumerList.firstOrNull {
                 it.peerId == peer.id
             }?.let {
                 it.consumer.track as VideoTrack
-            }?.addSink(renderer)
+            }?.addSink(videoWallpaper.getRenderer())
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlateViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.charging_station_plate, parent, false)
+            .inflate(R.layout.layout_peer_list, parent, false)
         return PlateViewHolder(view, onClick)
     }
 
