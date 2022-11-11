@@ -57,6 +57,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnJoin.setOnClickListener {
             mainViewModel.join()
         }
+        binding.btnFn.setOnClickListener {
+            adapter.removeFist()
+        }
     }
 
 

@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.widget.VideoWallpaper
 import org.mediasoup.droid.lib.model.Peer
-import org.webrtc.VideoTrack
 
 class PeerAdapter(private val onClick: (Peer) -> Unit) :
     RecyclerView.Adapter<PeerAdapter.PlateViewHolder>() {
@@ -38,9 +37,13 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
         private fun render(videoWallpaper: VideoWallpaper, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
             consumerList.firstOrNull {
                 it.peerId == peer.id
-            }?.let {
-                it.consumer.track as VideoTrack
-            }?.addSink(videoWallpaper.getRenderer())
+            }.let {
+                if (it == null) {
+                    videoWallpaper.hideVideo()
+                } else {
+                    videoWallpaper.showVideo(it.consumer.track)
+                }
+            }
         }
     }
 
@@ -68,5 +71,9 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
         data.clear()
         data.addAll(ArrayList(peers))
         notifyDataSetChanged()
+    }
+
+    fun removeFist() {
+
     }
 }
