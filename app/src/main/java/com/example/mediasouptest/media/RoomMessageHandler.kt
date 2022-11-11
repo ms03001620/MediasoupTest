@@ -21,7 +21,10 @@ class RoomMessageHandler {
     }
 
     fun handleNotification(notification: Message.Notification) {
-        if ("downlinkBwe" == notification.method) {
+        if (notification.method == "downlinkBwe" ||
+            notification.method == "activeSpeaker"
+        ) {
+            // Noisy, dismiss
             return
         }
         Logger.d("RoomMessageHandler", "method:${notification.method}, j:${notification.data.toString()}")
