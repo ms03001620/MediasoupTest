@@ -37,11 +37,9 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
             render(videoRenderer, plate, consumerList)
         }
 
-        fun render(renderer: SurfaceViewRenderer, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
+        private fun render(renderer: SurfaceViewRenderer, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
             consumerList.firstOrNull {
                 it.peerId == peer.id
-            }?.takeIf { consumerHolder ->
-                consumerHolder.consumer.track is VideoTrack
             }?.let {
                 it.consumer.track as VideoTrack
             }?.addSink(renderer)
@@ -62,8 +60,9 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
         return data.size
     }
 
-    fun onNewConsumer(consumerHolder: ConsumerHolder){
-        consumerList.add(consumerHolder)
+    fun onNewConsumer(consumers: List<ConsumerHolder>) {
+        consumerList.clear()
+        consumerList.addAll(consumers)
         notifyDataSetChanged()
     }
 

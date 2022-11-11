@@ -79,7 +79,7 @@ class RoomClient {
                                 Logger.d(TAG, "newConsumer:${it.println()}")
                                 roomMessageHandler.add(it)
                                 handler.accept()
-                                onRoomClientEvent?.onNewConsumer(it)
+                                onRoomClientEvent?.onNewConsumer(roomMessageHandler)
                                 attemptAudioOnly(it)
                             }
                         }
@@ -294,7 +294,7 @@ class RoomClient {
 
     public interface OnRoomClientEvent {
         fun onLoadPeers(peers: ArrayList<org.mediasoup.droid.lib.model.Peer>)
-        fun onNewConsumer(consumerHolder: ConsumerHolder)
+        fun onNewConsumer(roomMessageHandler: RoomMessageHandler)
     }
 
     companion object {

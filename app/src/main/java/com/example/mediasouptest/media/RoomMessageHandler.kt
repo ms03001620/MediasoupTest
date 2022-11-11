@@ -2,6 +2,7 @@ package com.example.mediasouptest.media
 
 import org.mediasoup.droid.Logger
 import org.protoojs.droid.Message
+import org.webrtc.VideoTrack
 import java.util.concurrent.ConcurrentHashMap
 
 class RoomMessageHandler {
@@ -11,6 +12,12 @@ class RoomMessageHandler {
 
     fun add(consumerHolder: ConsumerHolder) {
         mConsumers[consumerHolder.consumer.id] = consumerHolder
+    }
+
+    fun getVideoConsumers() = mConsumers.toMap().filter {
+        it.value.consumer.track is VideoTrack
+    }.map {
+        it.value
     }
 
     fun handleNotification(notification: Message.Notification) {

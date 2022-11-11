@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.media.RoomClient
+import com.example.mediasouptest.media.RoomMessageHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.demo.RoomClientConfig
@@ -16,7 +17,7 @@ class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
     var roomClient: RoomClient? = null
-    val onNewConsumer = SingleLiveEvent<ConsumerHolder>()
+    val onNewConsumer = SingleLiveEvent<List<ConsumerHolder>>()
 
     fun loadConfig(context: Context) {
         roomClientConfig.loadFromShare(context)
@@ -38,8 +39,8 @@ class MainViewModel: ViewModel() {
             peersLiveData.postValue(peers)
         }
 
-        override fun onNewConsumer(consumerHolder: ConsumerHolder) {
-            onNewConsumer.postValue(consumerHolder)
+        override fun onNewConsumer(roomMessageHandler: RoomMessageHandler) {
+            onNewConsumer.postValue(roomMessageHandler.getVideoConsumers())
         }
     }
 
