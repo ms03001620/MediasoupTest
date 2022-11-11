@@ -19,16 +19,6 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
         private val textName: TextView = itemView.findViewById(R.id.text_name)
         private val videoWallpaper: VideoWallpaper = itemView.findViewById(R.id.video_wallpaper)
 
-        var currentPlate: Peer? = null
-
-        init {
-            itemView.setOnClickListener {
-                currentPlate?.let {
-                    onClick(it)
-                }
-            }
-        }
-
         fun bind(plate: Peer, consumerList: MutableList<ConsumerHolder>) {
             textName.text = plate.displayName + "," + plate.id
             render(videoWallpaper, plate, consumerList)

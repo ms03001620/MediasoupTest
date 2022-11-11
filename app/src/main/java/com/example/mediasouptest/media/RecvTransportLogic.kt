@@ -66,7 +66,6 @@ class RecvTransportLogic {
         val appData = data.optString("appData")
         val producerPaused = data.optBoolean("producerPaused")
 
-        assert(!producerPaused)
         val consumer = recvTransport?.consume(callback, id, producerId, kind, rtpParameters, appData)
 
         if (consumer != null) {
