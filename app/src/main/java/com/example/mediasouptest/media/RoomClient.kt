@@ -76,6 +76,7 @@ class RoomClient {
                                     }
                                 }
                             })?.let {
+                                Logger.d(TAG, "newConsumer:${it.println()}")
                                 roomMessageHandler.add(it)
                                 handler.accept()
                                 onRoomClientEvent?.onNewConsumer(it)
