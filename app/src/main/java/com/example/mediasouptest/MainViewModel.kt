@@ -6,12 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.media.RoomClient
-import com.example.mediasouptest.media.RoomMessageHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.model.Peer
-import java.util.ArrayList
 
 class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
@@ -29,18 +27,7 @@ class MainViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             roomClient = RoomClient()
             roomClient?.init(roomClientConfig)
-            roomClient?.setRoomClientEvent(createOnRoomClientEvent())
             roomClient?.start()
-        }
-    }
-
-    private fun createOnRoomClientEvent() = object : RoomClient.OnRoomClientEvent {
-        override fun onLoadPeers(peers: ArrayList<Peer>) {
-            peersLiveData.postValue(peers)
-        }
-
-        override fun onNewConsumer(roomMessageHandler: RoomMessageHandler) {
-            onNewConsumer.postValue(roomMessageHandler.getVideoConsumers())
         }
     }
 
@@ -52,7 +39,19 @@ class MainViewModel: ViewModel() {
 
     fun join() {
         viewModelScope.launch(Dispatchers.IO) {
-            roomClient?.join()
+            roomClient?.join(createOnRoomClientEvent())
         }
     }
+
+
+    private fun createOnRoomClientEvent() = object : RoomClient.OnRoomClientEvent {
+        override fun onPeersChange(peers: List<Peer>) {
+            peersLiveData.postValue(peers)
+        }
+
+        override fun onVideoConsumersChange(consumers: List<ConsumerHolder>) {
+            onNewConsumer.postValue(consumers)
+        }
+    }
+
 }

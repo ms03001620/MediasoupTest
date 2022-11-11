@@ -1,5 +1,6 @@
 package com.example.mediasouptest.media
 
+import org.json.JSONArray
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
@@ -8,12 +9,10 @@ import org.mediasoup.droid.lib.JsonUtils.toJsonObject
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.UrlFactory
-import org.mediasoup.droid.lib.model.Peers
 import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
-import java.util.ArrayList
 import java.util.concurrent.CountDownLatch
 
 class RoomClient {
@@ -22,7 +21,7 @@ class RoomClient {
     private var localDeviceHelper: LocalDeviceHelper? = null
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
-    private var onRoomClientEvent: OnRoomClientEvent? = null
+    private var roomMessageHandler: RoomMessageHandler? = null
 
     fun init(roomClientConfig: RoomClientConfig) {
         this.roomClientConfig = roomClientConfig
@@ -45,6 +44,7 @@ class RoomClient {
     fun end() {
         deviceLogic?.end()
         deviceLogic = null
+        roomMessageHandler = null
         mProtoo?.close()
         mProtoo = null
         localDeviceHelper?.dispose()
@@ -52,8 +52,6 @@ class RoomClient {
     }
 
     private fun createPeerListener() =  object : Peer.Listener {
-        val roomMessageHandler = RoomMessageHandler()
-
         override fun onOpen() {
             requestRouterRtpCapabilities()
         }
@@ -71,16 +69,14 @@ class RoomClient {
                         } else {
                             deviceLogic?.onNewConsumer(request, object : Consumer.Listener {
                                 override fun onTransportClose(consumer: Consumer) {
-                                    roomMessageHandler.remove(consumer.id).let {
-                                        Logger.d(TAG, "onTransportClose:${it?.peerId ?: ""}")
-                                    }
+                                    Logger.d(TAG, "onTransportClose:${consumer.id}")
+                                    roomMessageHandler?.removeClose(consumer)
                                 }
-                            })?.let {
-                                Logger.d(TAG, "newConsumer:${it.println()}")
-                                roomMessageHandler.add(it)
+                            })?.let { newConsumer ->
+                                Logger.d(TAG, "newConsumer:${newConsumer.println()}")
+                                roomMessageHandler?.add(newConsumer)
                                 handler.accept()
-                                onRoomClientEvent?.onNewConsumer(roomMessageHandler)
-                                attemptAudioOnly(it)
+                                attemptAudioOnly(newConsumer)
                             }
                         }
                     }
@@ -95,7 +91,7 @@ class RoomClient {
 
         override fun onNotification(notification: Message.Notification) {
             try {
-                roomMessageHandler.handleNotification(notification)
+                roomMessageHandler?.handleNotification(notification)
             } catch (e: Exception) {
                 Logger.e(TAG, "onNotification", e)
             }
@@ -257,7 +253,8 @@ class RoomClient {
         return JSONObject(response).optString("id")
     }
 
-    fun join() {
+
+    fun join(onRoomClientEvent: OnRoomClientEvent) {
         assert(deviceLogic != null)
         assert(mProtoo != null)
         mProtoo?.let {  protoo ->
@@ -270,6 +267,7 @@ class RoomClient {
             }.let { json ->
                 protoo.request("join", json, object: ClientRequestHandler{
                     override fun resolve(data: String?) {
+                        roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
                         onJoinRoom(toJsonObject(data))
                     }
 
@@ -283,18 +281,14 @@ class RoomClient {
 
     fun onJoinRoom(json: JSONObject){
         Logger.d(TAG, "onJoinRoom ${json.toString()}")
-        val peers = json.optJSONArray("peers")
-        Logger.d(TAG, "peers size ${peers.length()}")
-        onRoomClientEvent?.onLoadPeers(Peers.createPeers(peers))
-    }
-
-    fun setRoomClientEvent(onRoomClientEvent: OnRoomClientEvent) {
-        this.onRoomClientEvent = onRoomClientEvent
+        val peersArray = json.optJSONArray("peers") ?: JSONArray()
+        Logger.d(TAG, "peers size ${peersArray.length()}")
+        roomMessageHandler?.addPeers(peersArray)
     }
 
     public interface OnRoomClientEvent {
-        fun onLoadPeers(peers: ArrayList<org.mediasoup.droid.lib.model.Peer>)
-        fun onNewConsumer(roomMessageHandler: RoomMessageHandler)
+        fun onPeersChange(peers: List<org.mediasoup.droid.lib.model.Peer>)
+        fun onVideoConsumersChange(consumers: List<ConsumerHolder>)
     }
 
     companion object {

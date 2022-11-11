@@ -16,6 +16,7 @@ public class Peer extends Info {
 
   private Set<String> consumers;
 
+  //{"id":"rvunszs6","displayName":"Name:honor_red","device":{"flag":"android","name":"Android HWBKL","version":"REL"}}
   public Peer(@NonNull JSONObject info) {
     mId = info.optString("id");
     mDisplayName = info.optString("displayName");
@@ -57,5 +58,15 @@ public class Peer extends Info {
 
   public Set<String> getConsumers() {
     return consumers;
+  }
+
+  @Override
+  public String toString() {
+    return "Peer{" +
+            "mId='" + mId + '\'' +
+            ", mDisplayName='" + mDisplayName + '\'' +
+            ", mDevice=" + mDevice +
+            ", consumers=" + consumers +
+            '}';
   }
 }

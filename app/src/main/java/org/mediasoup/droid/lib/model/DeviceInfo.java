@@ -58,4 +58,13 @@ public class DeviceInfo {
     jsonPut(deviceInfo, "version", getVersion());
     return deviceInfo;
   }
+
+  @Override
+  public String toString() {
+    return "DeviceInfo{" +
+            "mFlag='" + mFlag + '\'' +
+            ", mName='" + mName + '\'' +
+            ", mVersion='" + mVersion + '\'' +
+            '}';
+  }
 }

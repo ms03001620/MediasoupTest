@@ -1,17 +1,69 @@
 package com.example.mediasouptest.media
 
+import org.json.JSONArray
+import org.json.JSONObject
+import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
+import org.mediasoup.droid.lib.model.Peer
+import org.mediasoup.droid.lib.model.Peers
 import org.protoojs.droid.Message
 import org.webrtc.VideoTrack
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
-class RoomMessageHandler {
+class RoomMessageHandler(val callback: RoomClient.OnRoomClientEvent) {
     private val mConsumers  = ConcurrentHashMap<String, ConsumerHolder>()
+    private val mPeers = CopyOnWriteArrayList<Peer>()
 
-    fun remove(id: String) = mConsumers.remove(id)
+    fun addPeers(peersArray: JSONArray) {
+        Peers.createPeers(peersArray).let {
+            addPeers(it)
+        }
+    }
+
+    //{"id":"rvunszs6","displayName":"Name:honor_red","device":{"flag":"android","name":"Android HWBKL","version":"REL"}}
+    private fun addPeer(jsonObject: JSONObject) {
+        addPeers(listOf(Peer(jsonObject)))
+    }
+
+    private fun addPeers(peer: List<Peer>) {
+        Logger.d(TAG, "add Peers: ${peer}")
+        mPeers.addAll(peer)
+        callback.onPeersChange(mPeers.toList())
+    }
+
+    private fun removePeer(peerId: String) {
+        mPeers.find {
+            it.id == peerId
+        }?.let {
+            mPeers.remove(it)
+            callback.onPeersChange(mPeers.toList())
+        }
+    }
+
+    fun removeClose(consumer: Consumer) {
+        assert(consumer.isClosed)
+        mConsumers.remove(consumer.id)?.let {
+            Logger.d(TAG, "removeClose:${it.peerId}")
+            callback.onVideoConsumersChange(getVideoConsumers())
+        }
+    }
+
+    private fun removeConsumerAndClose(consumerId: String) {
+        mConsumers.remove(consumerId)?.let {
+            try {
+                it.consumer.close()
+                callback.onVideoConsumersChange(getVideoConsumers())
+            } catch (e: Exception) {
+                Logger.e(TAG, "removeConsumerAndClose", e)
+            }
+        }
+    }
 
     fun add(consumerHolder: ConsumerHolder) {
+        Logger.d(TAG, "add: ${consumerHolder.println()}")
         mConsumers[consumerHolder.consumer.id] = consumerHolder
+        callback.onVideoConsumersChange(getVideoConsumers())
     }
 
     fun getVideoConsumers() = mConsumers.toMap().filter {
@@ -27,7 +79,7 @@ class RoomMessageHandler {
             // Noisy, dismiss
             return
         }
-        Logger.d("RoomMessageHandler", "method:${notification.method}, j:${notification.data.toString()}")
+        Logger.d(TAG, "method:${notification.method}, j:${notification.data.toString()}")
         val data = notification.data
         when (notification.method) {
             "producerScore" -> {
@@ -37,13 +89,17 @@ class RoomMessageHandler {
                 val score = data.getJSONArray("score")
             }
             "newPeer" -> {
+                //method:newPeer, j:{"id":"rvunszs6","displayName":"Name:honor_red","device":{"flag":"android","name":"Android HWBKL","version":"REL"}}
                 val id = data.getString("id")
                 val displayName = data.optString("displayName")
+                addPeer(data)
                 //mStore.addPeer(id, data)
                 //mStore.addNotify("$displayName has joined the room")
             }
             "peerClosed" -> {
+                //{"peerId":"rvunszs6"}
                 val peerId = data.getString("peerId")
+                removePeer(peerId)
                 //mStore.removePeer(peerId)
             }
             "peerDisplayNameChanged" -> {
@@ -54,12 +110,11 @@ class RoomMessageHandler {
                 //mStore.addNotify("$oldDisplayName is now $displayName")
             }
             "consumerClosed" -> {
+                //{"consumerId":"e398df73-fa1c-4073-8ca3-bb0ee99a717d"}
                 val consumerId = data.getString("consumerId")
 
-                mConsumers.remove(consumerId)?.let {
-                    it.consumer.close()
-                    //mStore.removeConsumer(holder.peerId, holder.mConsumer.id)
-                }
+                removeConsumerAndClose(consumerId)
+
             }
             "consumerPaused" -> {
                 val consumerId = data.getString("consumerId")
@@ -94,8 +149,12 @@ class RoomMessageHandler {
                 //mStore.setRoomActiveSpeaker(peerId)
             }
             else -> {
-                Logger.v("RoomMessageHandler", "unknown protoo notification.method " + notification.method)
+                Logger.v(TAG, "unknown protoo notification.method " + notification.method)
             }
         }
+    }
+
+    companion object{
+        const val TAG = "RoomMessageHandler"
     }
 }
