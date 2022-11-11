@@ -41,9 +41,9 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
             consumerList.firstOrNull {
                 it.peerId == peer.id
             }?.takeIf { consumerHolder ->
-                consumerHolder.consumer.kind == "video"
+                consumerHolder.consumer.track is VideoTrack
             }?.let {
-                it.consumer as VideoTrack
+                it.consumer.track as VideoTrack
             }?.addSink(renderer)
         }
     }
