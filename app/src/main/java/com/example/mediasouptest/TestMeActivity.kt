@@ -1,14 +1,16 @@
 package com.example.mediasouptest
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.mediasouptest.databinding.ActivityTestMeBinding
-import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.widget.VideoWallpaper
+import org.mediasoup.droid.Producer
+import org.mediasoup.droid.lib.PeerConnectionUtils
 import org.webrtc.VideoTrack
 
 class TestMeActivity : AppCompatActivity() {
@@ -37,16 +39,20 @@ class TestMeActivity : AppCompatActivity() {
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
         }
-        mainViewModel.onNewConsumer.observe(this){
+        mainViewModel.onProductSelf.observe(this){
             showOne(it)
         }
     }
 
-    private fun showOne(consumerHolders: List<ConsumerHolder>) {
-        Log.d("----", "----")
-        consumerHolders.firstOrNull()?.let {
-            findViewById<VideoWallpaper>(R.id.renderer).showVideo((it.consumer.track as VideoTrack))
-        }
+    private fun showOne(producer: Producer) {
+        findViewById<VideoWallpaper>(R.id.renderer).showVideo((producer.track as VideoTrack))
+    }
+
+
+    private fun initCamera() {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val camera = preferences.getString("camera", "front")
+        PeerConnectionUtils.setPreferCameraFace(camera)
     }
 
     private fun initEvent() {
@@ -60,10 +66,12 @@ class TestMeActivity : AppCompatActivity() {
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-            val r  = findViewById<VideoWallpaper>(R.id.renderer)
-            r.hideVideo()
+            initCamera()
+            mainViewModel.showSelf(getAct())
         }
     }
+
+    fun getAct() = this
 
 
 }

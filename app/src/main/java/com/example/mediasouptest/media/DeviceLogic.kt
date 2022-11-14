@@ -23,7 +23,11 @@ class DeviceLogic(
         rtpCapabilities = device.rtpCapabilities
     }
 
-    fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) = sendTransportLogic.createSelfTransport(localDeviceHelper, mContext)
+    fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
+        sendTransportLogic.createSelfTransport(localDeviceHelper, mContext)
+
+    fun createSelfAudioTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
+        sendTransportLogic.createSelfAudioTransport(localDeviceHelper, mContext)
 
     fun createSendTransport(info: JSONObject, callback: OnCreateSendTransportEvent) =
         sendTransportLogic.createSendTransport(device, info, callback)

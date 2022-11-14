@@ -38,11 +38,28 @@ class SendTransportLogic {
 
         return mSendTransport?.produce({ producer: Producer? ->
             Logger.e(TAG, "createSelfTransport(), close")
+            assert(producer == null)
             if (producer != null) {
                 //mStore.removeProducer(producer.getId())
                 //mCamProducer = null
             }
         }, localDeviceHelper.getVideoTrack(), null, null, null)
+    }
+
+    fun createSelfAudioTransport(
+        localDeviceHelper: LocalDeviceHelper,
+        mContext: Context
+    ): Producer? {
+        localDeviceHelper.enableMicImpl(mContext)
+
+        return mSendTransport?.produce({ producer: Producer? ->
+            Logger.e(TAG, "createSelfTransport(), close")
+            assert(producer == null)
+            if (producer != null) {
+                //mStore.removeProducer(producer.getId())
+                //mCamProducer = null
+            }
+        }, localDeviceHelper.getAudioTrack(), null, null, null)
     }
 
     private fun createSendTransportListener(callback: OnCreateSendTransportEvent) = object : SendTransport.Listener {

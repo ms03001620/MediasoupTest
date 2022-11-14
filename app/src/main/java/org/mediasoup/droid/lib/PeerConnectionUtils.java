@@ -43,7 +43,6 @@ public class PeerConnectionUtils {
         mPreferCameraFace = preferCameraFace;
     }
 
-    private final ThreadUtils.ThreadChecker mThreadChecker;
     private PeerConnectionFactory mPeerConnectionFactory;
 
     private AudioSource mAudioSource;
@@ -51,13 +50,13 @@ public class PeerConnectionUtils {
     private CameraVideoCapturer mCamCapture;
 
     public PeerConnectionUtils() {
-        mThreadChecker = new ThreadUtils.ThreadChecker();
+        //mThreadChecker = new ThreadUtils.ThreadChecker();
     }
 
     // PeerConnection factory creation.
     private void createPeerConnectionFactory(Context context) {
         Logger.d(TAG, "createPeerConnectionFactory()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         PeerConnectionFactory.Builder builder = PeerConnectionFactory.builder();
         builder.setOptions(null);
 
@@ -75,7 +74,7 @@ public class PeerConnectionUtils {
 
     private AudioDeviceModule createJavaAudioDevice(Context appContext) {
         Logger.d(TAG, "createJavaAudioDevice()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         // Enable/disable OpenSL ES playback.
         // Set audio record error callbacks.
         JavaAudioDeviceModule.AudioRecordErrorCallback audioRecordErrorCallback = new JavaAudioDeviceModule.AudioRecordErrorCallback() {
@@ -123,7 +122,7 @@ public class PeerConnectionUtils {
     // Audio source creation.
     private void createAudioSource(Context context) {
         Logger.d(TAG, "createAudioSource()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mPeerConnectionFactory == null) {
             createPeerConnectionFactory(context);
         }
@@ -133,7 +132,7 @@ public class PeerConnectionUtils {
 
     private void createCamCapture(Context context) {
         Logger.d(TAG, "createCamCapture()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         boolean isCamera2Supported = Camera2Enumerator.isSupported(context);
         CameraEnumerator cameraEnumerator;
 
@@ -200,7 +199,7 @@ public class PeerConnectionUtils {
 
     public void switchCam(CameraVideoCapturer.CameraSwitchHandler switchHandler) {
         Logger.d(TAG, "switchCam()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mCamCapture != null) {
             mCamCapture.switchCamera(switchHandler);
         }
@@ -210,7 +209,7 @@ public class PeerConnectionUtils {
     @MainThread
     private void createVideoSource(Context context) {
         Logger.d(TAG, "createVideoSource()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mPeerConnectionFactory == null) {
             createPeerConnectionFactory(context);
         }
@@ -229,7 +228,7 @@ public class PeerConnectionUtils {
     // Audio track creation.
     public AudioTrack createAudioTrack(Context context, String id) {
         Logger.d(TAG, "createAudioTrack()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mAudioSource == null) {
             createAudioSource(context);
         }
@@ -239,7 +238,7 @@ public class PeerConnectionUtils {
     // Video track creation.
     public VideoTrack createVideoTrack(Context context, String id) {
         Logger.d(TAG, "createVideoTrack()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mVideoSource == null) {
             createVideoSource(context);
         }
@@ -249,7 +248,7 @@ public class PeerConnectionUtils {
 
     public void disposeAudio() {
         Logger.w(TAG, "disposeAudio()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mAudioSource != null) {
             mAudioSource.dispose();
             mAudioSource = null;
@@ -258,7 +257,7 @@ public class PeerConnectionUtils {
 
     public void disposeVideo() {
         Logger.w(TAG, "disposeVideo()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mCamCapture != null) {
             mCamCapture.dispose();
             mCamCapture = null;
@@ -271,12 +270,12 @@ public class PeerConnectionUtils {
     }
 
     public void checkIsOnValidThread() {
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
     }
 
     public void dispose() {
         Logger.w(TAG, "dispose()");
-        mThreadChecker.checkIsOnValidThread();
+        //mThreadChecker.checkIsOnValidThread();
         if (mCamCapture != null) {
             mCamCapture.dispose();
             mCamCapture = null;

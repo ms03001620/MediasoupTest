@@ -69,18 +69,12 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
-            localDeviceHelper?.dispose()
-            localDeviceHelper=null
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
-            localDeviceHelper = LocalDeviceHelper()
-            localDeviceHelper?.start()
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-            initCamera()
-            mainViewModel.showSelf(localDeviceHelper!!, applicationContext)
         }
     }
 }

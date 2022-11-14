@@ -1,8 +1,10 @@
 package com.example.mediasouptest.media
 
 import android.content.Context
+import android.os.Handler
 import android.os.Looper
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
@@ -17,7 +19,7 @@ import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
 import java.util.concurrent.CountDownLatch
 
-class RoomClient {
+class RoomClient(val workHandler: Handler) {
     private lateinit var roomClientConfig: RoomClientConfig
     private var mProtooUrl: String = ""
     private var mProtoo: Protoo? = null
@@ -50,7 +52,9 @@ class RoomClient {
 
     private fun createPeerListener() =  object : Peer.Listener {
         override fun onOpen() {
-            requestRouterRtpCapabilities()
+            //workHandler.post {
+                requestRouterRtpCapabilities()
+            //}
         }
 
         override fun onFail() {
@@ -58,32 +62,34 @@ class RoomClient {
         }
 
         override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
-            try {
-                when (request.method) {
-                    "newConsumer" -> {
-                        if (!roomClientConfig.roomOptions.isConsume) {
-                            handler.reject(-1, "I do not want to consume")
-                        } else {
-                            deviceLogic?.onNewConsumer(request, object : Consumer.Listener {
-                                override fun onTransportClose(consumer: Consumer) {
-                                    Logger.d(TAG, "onTransportClose:${consumer.id}")
-                                    roomMessageHandler?.removeClose(consumer)
+            //workHandler.post {
+                try {
+                    when (request.method) {
+                        "newConsumer" -> {
+                            if (!roomClientConfig.roomOptions.isConsume) {
+                                handler.reject(-1, "I do not want to consume")
+                            } else {
+                                deviceLogic?.onNewConsumer(request, object : Consumer.Listener {
+                                    override fun onTransportClose(consumer: Consumer) {
+                                        Logger.d(TAG, "onTransportClose:${consumer.id}")
+                                        roomMessageHandler?.removeClose(consumer)
+                                    }
+                                })?.let { newConsumer ->
+                                    Logger.d(TAG, "newConsumer:${newConsumer.println()}")
+                                    roomMessageHandler?.add(newConsumer)
+                                    handler.accept()
+                                    attemptAudioOnly(newConsumer)
                                 }
-                            })?.let { newConsumer ->
-                                Logger.d(TAG, "newConsumer:${newConsumer.println()}")
-                                roomMessageHandler?.add(newConsumer)
-                                handler.accept()
-                                attemptAudioOnly(newConsumer)
                             }
                         }
+                        else -> {
+                            handler.reject(-1, "unsupported:${request.method}")
+                        }
                     }
-                    else -> {
-                        handler.reject(-1, "unsupported:${request.method}")
-                    }
+                } catch (e: Exception) {
+                    handler.reject(-1, "error: msg:${e.message} " + request.method)
                 }
-            } catch (e: Exception) {
-                handler.reject(-1, "error: msg:${e.message} " + request.method)
-            }
+            //}
         }
 
         override fun onNotification(notification: Message.Notification) {
@@ -166,9 +172,11 @@ class RoomClient {
         }
     }
 
-    fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context){
+    fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
         deviceLogic?.createSelfTransport(localDeviceHelper, mContext)
-    }
+
+    fun showSelfAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
+        deviceLogic?.createSelfAudioTransport(localDeviceHelper, mContext)
 
     private fun createSendTransport(info: JSONObject) {
         deviceLogic?.createSendTransport(
@@ -237,22 +245,13 @@ class RoomClient {
 
     private fun requestProduce(info: JSONObject): String {
         Logger.d(TAG, "requestProduce")
-        val countDownLatch = CountDownLatch(1)
-        var response = ""
-        mProtoo?.request("produce", info, object : Peer.ClientRequestHandler {
-            override fun resolve(data: String?) {
-                Logger.d(TAG, "createSendTransport onProduce resolve:$data")
-                response = data ?: ""
-                countDownLatch.countDown()
-            }
 
-            override fun reject(error: Long, errorReason: String?) {
-                Logger.e(TAG, "createSendTransport onProduce reject:$error, $errorReason")
-                countDownLatch.countDown()
-            }
-        })
-        countDownLatch.await()
-        return JSONObject(response).optString("id")
+        try {
+            val response = mProtoo!!.syncRequest("produce", info)
+            return JSONObject(response).optString("id")
+        }catch (e: Exception){
+            return ""
+        }
     }
 
 

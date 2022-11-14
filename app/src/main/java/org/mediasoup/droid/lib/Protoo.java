@@ -71,7 +71,7 @@ public class Protoo extends org.protoojs.droid.Peer {
   }
 
   @WorkerThread
-  private String syncRequest(String method, @NonNull JSONObject data) throws ProtooException {
+  public String syncRequest(String method, @NonNull JSONObject data) throws ProtooException {
     Logger.d(TAG, "syncRequest(), method: " + method);
 
     try {
