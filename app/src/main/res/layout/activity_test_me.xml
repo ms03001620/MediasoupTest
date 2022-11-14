@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingDefaultResource">
 
     <data />
-
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <Button
-            android:id="@+id/btn_testSurfaceViewRenderer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="testSurfaceViewRenderer" />
-
-        <Button
-            android:id="@+id/btn_me"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="testMe" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -54,11 +42,23 @@
 
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/remote_peers"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#0f0" />
+            android:layout_height="100dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.example.mediasouptest.widget.VideoWallpaper
+                    android:id="@+id/renderer"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp" />
+            </FrameLayout>
+
+
+        </ScrollView>
+
 
     </LinearLayout>
 </layout>

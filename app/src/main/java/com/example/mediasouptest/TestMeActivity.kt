@@ -1,20 +1,21 @@
 package com.example.mediasouptest
 
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mediasouptest.databinding.ActivityMainBinding
+import com.example.mediasouptest.databinding.ActivityTestMeBinding
+import com.example.mediasouptest.media.ConsumerHolder
+import com.example.mediasouptest.widget.VideoWallpaper
+import org.webrtc.VideoTrack
 
-class MainActivity : AppCompatActivity() {
+class TestMeActivity : AppCompatActivity() {
     private val mainViewModel by lazy {
         ViewModelProvider(this, ViewModelFactory())[MainViewModel::class.java]
     }
-    lateinit var binding: ActivityMainBinding
-    lateinit var adapter: PeerAdapter
+    lateinit var binding: ActivityTestMeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,32 +30,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_test_me)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        binding.remotePeers.layoutManager = LinearLayoutManager(this)
-        adapter = PeerAdapter {
-
-        }
-
-        binding.remotePeers.adapter = adapter
     }
 
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
-            adapter.setPeers(it)
         }
         mainViewModel.onNewConsumer.observe(this){
-            adapter.onNewConsumer(it)
+            showOne(it)
+        }
+    }
+
+    private fun showOne(consumerHolders: List<ConsumerHolder>) {
+        Log.d("----", "----")
+        consumerHolders.firstOrNull()?.let {
+            findViewById<VideoWallpaper>(R.id.renderer).showVideo((it.consumer.track as VideoTrack))
         }
     }
 
     private fun initEvent() {
-        binding.btnTestSurfaceViewRenderer.setOnClickListener {
-            startActivity(Intent(this, TestSurfaceViewRenderer::class.java))
-        }
-        binding.btnMe.setOnClickListener {
-            startActivity(Intent(this, TestMeActivity::class.java))
-        }
         binding.btnStart.setOnClickListener {
             mainViewModel.initSdk()
         }
@@ -65,7 +60,10 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-
+            val r  = findViewById<VideoWallpaper>(R.id.renderer)
+            r.hideVideo()
         }
     }
+
+
 }
