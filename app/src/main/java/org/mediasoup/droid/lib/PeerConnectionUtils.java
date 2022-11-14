@@ -270,6 +270,10 @@ public class PeerConnectionUtils {
         }
     }
 
+    public void checkIsOnValidThread() {
+        mThreadChecker.checkIsOnValidThread();
+    }
+
     public void dispose() {
         Logger.w(TAG, "dispose()");
         mThreadChecker.checkIsOnValidThread();

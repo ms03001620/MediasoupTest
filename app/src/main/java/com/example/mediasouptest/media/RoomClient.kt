@@ -1,5 +1,7 @@
 package com.example.mediasouptest.media
 
+import android.content.Context
+import android.os.Looper
 import org.json.JSONArray
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
@@ -18,7 +20,6 @@ import java.util.concurrent.CountDownLatch
 class RoomClient {
     private lateinit var roomClientConfig: RoomClientConfig
     private var mProtooUrl: String = ""
-    private var localDeviceHelper: LocalDeviceHelper? = null
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
     private var roomMessageHandler: RoomMessageHandler? = null
@@ -32,8 +33,6 @@ class RoomClient {
             configData.forceH264,
             configData.forceVp9
         )
-        localDeviceHelper = LocalDeviceHelper()
-        localDeviceHelper?.start()
     }
 
     fun start() {
@@ -47,8 +46,6 @@ class RoomClient {
         roomMessageHandler = null
         mProtoo?.close()
         mProtoo = null
-        localDeviceHelper?.dispose()
-        localDeviceHelper = null
     }
 
     private fun createPeerListener() =  object : Peer.Listener {
@@ -98,7 +95,8 @@ class RoomClient {
         }
 
         override fun onDisconnected() {
-            Logger.w(TAG, "onDisconnected")
+            Logger.w(TAG, "onDisconnected ${Thread.currentThread().name}, ${Looper.myLooper()== Looper.myLooper()}")
+            //TODO workthread
             end()
         }
 
@@ -166,6 +164,10 @@ class RoomClient {
                 }
             })
         }
+    }
+
+    fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context){
+        deviceLogic?.createSelfTransport(localDeviceHelper, mContext)
     }
 
     private fun createSendTransport(info: JSONObject) {

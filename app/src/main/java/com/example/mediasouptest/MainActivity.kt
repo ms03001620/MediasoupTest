@@ -2,12 +2,15 @@ package com.example.mediasouptest
 
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
+import org.mediasoup.droid.lib.LocalDeviceHelper
+import org.mediasoup.droid.lib.PeerConnectionUtils
 
 class MainActivity : AppCompatActivity() {
     private val mainViewModel by lazy {
@@ -15,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainBinding
     lateinit var adapter: PeerAdapter
+    private var localDeviceHelper: LocalDeviceHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +52,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initCamera() {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val camera = preferences.getString("camera", "front")
+        PeerConnectionUtils.setPreferCameraFace(camera)
+    }
+
     private fun initEvent() {
         binding.btnTestSurfaceViewRenderer.setOnClickListener {
             startActivity(Intent(this, TestSurfaceViewRenderer::class.java))
@@ -59,13 +69,18 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
+            localDeviceHelper?.dispose()
+            localDeviceHelper=null
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
+            localDeviceHelper = LocalDeviceHelper()
+            localDeviceHelper?.start()
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-
+            initCamera()
+            mainViewModel.showSelf(localDeviceHelper!!, applicationContext)
         }
     }
 }

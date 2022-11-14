@@ -1,11 +1,12 @@
 package com.example.mediasouptest.media
 
+import android.content.Context
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Device
+import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.RoomOptions
 import org.protoojs.droid.Message
-import org.protoojs.droid.Peer
 
 class DeviceLogic(
     private val mOptions: RoomOptions,
@@ -21,6 +22,8 @@ class DeviceLogic(
         device.load(routerRtpCapabilities, null)
         rtpCapabilities = device.rtpCapabilities
     }
+
+    fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) = sendTransportLogic.createSelfTransport(localDeviceHelper, mContext)
 
     fun createSendTransport(info: JSONObject, callback: OnCreateSendTransportEvent) =
         sendTransportLogic.createSendTransport(device, info, callback)

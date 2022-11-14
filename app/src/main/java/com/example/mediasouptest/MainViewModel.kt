@@ -9,6 +9,7 @@ import com.example.mediasouptest.media.RoomClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.demo.RoomClientConfig
+import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.model.Peer
 
 class MainViewModel: ViewModel() {
@@ -52,6 +53,10 @@ class MainViewModel: ViewModel() {
         override fun onVideoConsumersChange(consumers: List<ConsumerHolder>) {
             onNewConsumer.postValue(consumers)
         }
+    }
+
+    fun showSelf(localDeviceHelper: LocalDeviceHelper, applicationContext: Context) {
+        roomClient?.showSelf(localDeviceHelper, applicationContext)
     }
 
 }

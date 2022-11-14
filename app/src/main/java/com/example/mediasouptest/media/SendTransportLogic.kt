@@ -1,8 +1,10 @@
 package com.example.mediasouptest.media
 
+import android.content.Context
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
+import org.mediasoup.droid.lib.LocalDeviceHelper
 
 class SendTransportLogic {
     private var mSendTransport: SendTransport? = null
@@ -26,6 +28,21 @@ class SendTransportLogic {
             dtlsParameters,
             DeviceLogic.mocKSctpParameters)
         return true
+    }
+
+    fun createSelfTransport(
+        localDeviceHelper: LocalDeviceHelper,
+        mContext: Context
+    ): Producer? {
+        localDeviceHelper.enableCamImpl(mContext)
+
+        return mSendTransport?.produce({ producer: Producer? ->
+            Logger.e(TAG, "createSelfTransport(), close")
+            if (producer != null) {
+                //mStore.removeProducer(producer.getId())
+                //mCamProducer = null
+            }
+        }, localDeviceHelper.getVideoTrack(), null, null, null)
     }
 
     private fun createSendTransportListener(callback: OnCreateSendTransportEvent) = object : SendTransport.Listener {
