@@ -49,6 +49,11 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        mainViewModel.close()
+        super.onDestroy()
+    }
+
     private fun initEvent() {
         binding.btnStart.setOnClickListener {
             mainViewModel.initSdk()

@@ -14,8 +14,11 @@ class LocalDeviceHelper {
     var localVideoTrack: VideoTrack? = null
     var localAudioTrack: AudioTrack? = null
 
-    fun start() {
+    init {
         peerConnectionUtils = PeerConnectionUtils()
+    }
+
+    fun start() {
     }
 
     fun switchCam(switchHandler: CameraSwitchHandler) {

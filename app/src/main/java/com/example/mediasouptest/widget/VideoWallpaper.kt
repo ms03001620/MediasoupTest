@@ -14,6 +14,7 @@ import org.webrtc.VideoTrack
 class VideoWallpaper(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private val renderer: SurfaceViewRenderer
     private val mask: View
+    private var videoTrack: VideoTrack?=null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.item_video, this, true)
@@ -30,6 +31,8 @@ class VideoWallpaper(context: Context, attrs: AttributeSet) : FrameLayout(contex
 
     fun showVideo(track: MediaStreamTrack) {
         with(track as VideoTrack) {
+           // renderer.init(PeerConnectionUtils.getEglContext(), null)
+            videoTrack = track
             track.addSink(renderer)
             mask.visibility = View.GONE
         }

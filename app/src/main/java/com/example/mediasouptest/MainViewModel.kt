@@ -21,6 +21,7 @@ class MainViewModel: ViewModel() {
     var roomClient: RoomClient? = null
     val onNewConsumer = SingleLiveEvent<List<ConsumerHolder>>()
     val onProductSelf = SingleLiveEvent<Producer>()
+    var localDeviceHelper: LocalDeviceHelper? = null
     private var mWorkHandler: Handler? = null
 
     fun loadConfig(context: Context) {
@@ -31,12 +32,7 @@ class MainViewModel: ViewModel() {
         // init worker handler.
         var handlerThread = HandlerThread("worker")
         handlerThread.start()
-        mWorkHandler = android.os.Handler(handlerThread.getLooper())
-
-        viewModelScope.launch(Dispatchers.IO) {
-            localDeviceHelper = LocalDeviceHelper()
-            localDeviceHelper?.start()
-        }
+        mWorkHandler = Handler(handlerThread.getLooper())
     }
 
     fun initSdk() {
@@ -48,11 +44,10 @@ class MainViewModel: ViewModel() {
     }
 
     fun close() {
-        viewModelScope.launch(Dispatchers.IO) {
-            localDeviceHelper?.dispose()
-            localDeviceHelper=null
-            roomClient?.end()
-        }
+        // 主线程调用需要直接关闭
+        localDeviceHelper?.dispose()
+        localDeviceHelper=null
+        roomClient?.end()
     }
 
     fun join() {
@@ -74,12 +69,13 @@ class MainViewModel: ViewModel() {
 
     fun showSelf(applicationContext: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            assert(localDeviceHelper!=null)
+            localDeviceHelper = LocalDeviceHelper()
+
             roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
 
-            roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
+            //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
         }
 
     }
@@ -87,9 +83,11 @@ class MainViewModel: ViewModel() {
     fun hideSelf(){
         viewModelScope.launch(Dispatchers.IO) {
             roomClient?.hideSelf()
+
+            localDeviceHelper?.dispose()
+            localDeviceHelper=null
         }
     }
 
-    var localDeviceHelper: LocalDeviceHelper? = null
 
 }

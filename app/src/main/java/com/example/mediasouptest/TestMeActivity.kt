@@ -38,6 +38,14 @@ class TestMeActivity : AppCompatActivity() {
 
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
+            val old = binding.textMessage.text
+            val sb = StringBuilder()
+            sb.append(old)
+            it.forEach {
+                sb.append("\n")
+                sb.append(it.toString())
+            }
+            binding.textMessage.text = sb.toString()
         }
         mainViewModel.onProductSelf.observe(this){
             showOne(it)
@@ -45,7 +53,13 @@ class TestMeActivity : AppCompatActivity() {
     }
 
     private fun showOne(producer: Producer) {
-        findViewById<VideoWallpaper>(R.id.renderer).showVideo((producer.track as VideoTrack))
+        // 暂不处理显示问题，显示无法释放
+        //findViewById<VideoWallpaper>(R.id.renderer).showVideo((producer.track as VideoTrack))
+    }
+
+    override fun onDestroy() {
+        mainViewModel.close()
+        super.onDestroy()
     }
 
 

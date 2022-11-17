@@ -52,6 +52,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        mainViewModel.close()
+        super.onDestroy()
+    }
+
     private fun initCamera() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         val camera = preferences.getString("camera", "front")
