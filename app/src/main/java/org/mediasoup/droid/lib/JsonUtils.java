@@ -27,6 +27,18 @@ public class JsonUtils {
   }
 
   @NonNull
+  public static JSONObject toJsonObject(String key, Object data) {
+    try {
+      JSONObject jSONObject = new JSONObject();
+      jSONObject.put(key, data);
+      return jSONObject;
+    } catch (JSONException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  @NonNull
   public static JSONArray toJsonArray(String data) {
     try {
       return new JSONArray(data);

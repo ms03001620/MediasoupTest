@@ -1,9 +1,11 @@
 package com.example.mediasouptest.media
 
 import android.content.Context
+import android.util.Log
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Device
+import org.mediasoup.droid.Producer
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.RoomOptions
 import org.protoojs.droid.Message
@@ -15,6 +17,8 @@ class DeviceLogic(
     private val device = Device()
     private val sendTransportLogic = SendTransportLogic()
     private val recvTransportLogic = RecvTransportLogic()
+    private var selfProducerVideo: Producer? = null
+    private var selfProducerAudio: Producer? = null
 
     private val rtpCapabilities: String
 
@@ -23,8 +27,22 @@ class DeviceLogic(
         rtpCapabilities = device.rtpCapabilities
     }
 
+    fun destroySelfTransport(): String? {
+        val id = selfProducerVideo?.id
+        selfProducerVideo?.close()
+        selfProducerVideo = null
+        return id
+    }
+
     fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        sendTransportLogic.createSelfTransport(localDeviceHelper, mContext)
+        sendTransportLogic.createSelfTransport(localDeviceHelper, mContext, object : Producer.Listener {
+            override fun onTransportClose(producer: Producer?) {
+                Log.e(TAG, "onTransportClose $producer, ${producer?.isClosed}")
+                assert(false)
+            }
+        }).also {
+            selfProducerVideo = it
+        }
 
     fun createSelfAudioTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
         sendTransportLogic.createSelfAudioTransport(localDeviceHelper, mContext)

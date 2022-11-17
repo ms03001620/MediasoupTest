@@ -32,18 +32,12 @@ class SendTransportLogic {
 
     fun createSelfTransport(
         localDeviceHelper: LocalDeviceHelper,
-        mContext: Context
-    ): Producer? {
+        mContext: Context,
+        autoCloseListener: Producer.Listener
+    ): Producer {
         localDeviceHelper.enableCamImpl(mContext)
-
-        return mSendTransport?.produce({ producer: Producer? ->
-            Logger.e(TAG, "createSelfTransport(), close")
-            assert(producer == null)
-            if (producer != null) {
-                //mStore.removeProducer(producer.getId())
-                //mCamProducer = null
-            }
-        }, localDeviceHelper.getVideoTrack(), null, null, null)
+        assert(mSendTransport!=null)
+        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null)
     }
 
     fun createSelfAudioTransport(

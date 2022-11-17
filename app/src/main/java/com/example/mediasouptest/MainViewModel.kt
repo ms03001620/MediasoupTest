@@ -74,6 +74,7 @@ class MainViewModel: ViewModel() {
 
     fun showSelf(applicationContext: Context) {
         viewModelScope.launch(Dispatchers.IO) {
+            assert(localDeviceHelper!=null)
             roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
@@ -81,6 +82,12 @@ class MainViewModel: ViewModel() {
             roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
         }
 
+    }
+
+    fun hideSelf(){
+        viewModelScope.launch(Dispatchers.IO) {
+            roomClient?.hideSelf()
+        }
     }
 
     var localDeviceHelper: LocalDeviceHelper? = null

@@ -65,9 +65,12 @@ class TestMeActivity : AppCompatActivity() {
         binding.btnJoin.setOnClickListener {
             mainViewModel.join()
         }
-        binding.btnFn.setOnClickListener {
+        binding.btnCam.setOnClickListener {
             initCamera()
             mainViewModel.showSelf(getAct())
+        }
+        binding.btnCamClose.setOnClickListener {
+            mainViewModel.hideSelf()
         }
     }
 

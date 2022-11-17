@@ -172,6 +172,39 @@ class RoomClient(val workHandler: Handler) {
         }
     }
 
+
+/*    @WorkerThread
+    private void disableCamImpl() {
+        Logger.d(TAG, "disableCamImpl()");
+        if (mCamProducer == null) {
+            return;
+        }
+        mCamProducer.close();
+        mStore.removeProducer(mCamProducer.getId());
+
+        try {
+            mProtoo.syncRequest("closeProducer", req -> jsonPut(req, "producerId", mCamProducer.getId()));
+        } catch (ProtooException e) {
+            e.printStackTrace();
+            mStore.addNotify("error", "Error closing server-side webcam Producer: " + e.getMessage());
+        }
+        mCamProducer = null;
+
+        localDeviceHelper.disposeVideo();
+    }*/
+
+
+    fun hideSelf() {
+        deviceLogic?.destroySelfTransport()?.let { id ->
+            try {
+                val resp = mProtoo?.syncRequest("closeProducer", toJsonObject("producerId", id))
+                Logger.d(TAG, "destroySelfTransport $resp")
+            } catch (e: Exception) {
+                Logger.e(TAG, "destroySelfTransport", e)
+            }
+        }
+    }
+
     fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
         deviceLogic?.createSelfTransport(localDeviceHelper, mContext)
 
