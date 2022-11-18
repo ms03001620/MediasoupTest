@@ -39,6 +39,7 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':mediasoup-client')
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
@@ -54,7 +55,7 @@ dependencies {
 
     implementation 'com.nabinbhandari.android:permissions:3.8'
     implementation 'org.protoojs.droid:protoo-client:4.0.3'
-    implementation 'io.github.haiyangwu:mediasoup-client:3.4.0-SNAPSHOT'
+    //implementation 'io.github.haiyangwu:mediasoup-client:3.4.0-SNAPSHOT'
 
 
     //app-lib
