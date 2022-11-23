@@ -1,21 +1,22 @@
 package com.example.mediasouptest.media
 
 import android.content.Context
-import android.util.Log
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Device
+import org.mediasoup.droid.Logger
 import org.mediasoup.droid.Producer
+import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.LocalDeviceHelper
-import org.mediasoup.droid.lib.RoomOptions
+import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Message
 
 class DeviceLogic(
-    private val mOptions: RoomOptions,
-    private val routerRtpCapabilities: String
+    private val routerRtpCapabilities: String,
+    private val protoo: Protoo
 ) {
     private val device = Device()
-    private val sendTransportLogic = SendTransportLogic()
+    private val sendTransportLogic = SendTransportLogic(protoo)
     private val recvTransportLogic = RecvTransportLogic()
     private var selfProducerVideo: Producer? = null
     private var selfProducerAudio: Producer? = null
@@ -27,17 +28,23 @@ class DeviceLogic(
         rtpCapabilities = device.rtpCapabilities
     }
 
-    fun destroySelfTransport(): String? {
-        val id = selfProducerVideo?.id
-        selfProducerVideo?.close()
-        selfProducerVideo = null
-        return id
+    fun destroyVideo(): String? {
+        return selfProducerVideo?.let { producer ->
+            val id = producer.id
+            producer.close()
+            try {
+                val resp = protoo.syncRequest("closeProducer", JsonUtils.toJsonObject("producerId", id))
+                Logger.d(TAG, "destroyVideo $resp")
+            } catch (e: Exception) {
+                Logger.e(TAG, "destroyVideo", e)
+            }
+            id
+        }
     }
 
     fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
         sendTransportLogic.createSelfTransport(localDeviceHelper, mContext, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
-                Log.e(TAG, "onTransportClose $producer, ${producer?.isClosed}")
                 assert(false)
             }
         }).also {
@@ -45,10 +52,17 @@ class DeviceLogic(
         }
 
     fun createSelfAudioTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        sendTransportLogic.createSelfAudioTransport(localDeviceHelper, mContext)
+        sendTransportLogic.createSelfAudioTransport(localDeviceHelper, mContext, object : Producer.Listener {
+            override fun onTransportClose(producer: Producer?) {
+                assert(false)
+            }
+        }).also {
+            selfProducerAudio = it
+        }
 
-    fun createSendTransport(info: JSONObject, callback: OnCreateSendTransportEvent) =
-        sendTransportLogic.createSendTransport(device, info, callback)
+
+    fun createSendTransport(info: JSONObject) =
+        sendTransportLogic.createSendTransport(device, info)
 
     fun createRecvTransport(info: JSONObject, callback: OnCreateRecvTransportEvent) =
         recvTransportLogic.createRecvTransport(device, info, callback)

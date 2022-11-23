@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
@@ -17,7 +16,6 @@ import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
-import java.util.concurrent.CountDownLatch
 
 class RoomClient(val workHandler: Handler) {
     private lateinit var roomClientConfig: RoomClientConfig
@@ -52,9 +50,10 @@ class RoomClient(val workHandler: Handler) {
 
     private fun createPeerListener() =  object : Peer.Listener {
         override fun onOpen() {
-            //workHandler.post {
+/*            workHandler.post {
                 requestRouterRtpCapabilities()
-            //}
+            }*/
+            requestRouterRtpCapabilities()
         }
 
         override fun onFail() {
@@ -124,10 +123,7 @@ class RoomClient(val workHandler: Handler) {
             object : ClientRequestHandler {
                 override fun resolve(routerRtpCapabilities: String?) {
                     Logger.d(TAG, "requestRouterRtpCapabilities resolve() $routerRtpCapabilities")
-                    routerRtpCapabilities?.let {
-                        deviceLogic = createDevice(routerRtpCapabilities)
-                        requestCreateWebRtcTransport()
-                    }
+                    requestCreateWebRtcTransport(routerRtpCapabilities!!)
                 }
 
                 override fun reject(error: Long, errorReason: String?) {
@@ -136,7 +132,7 @@ class RoomClient(val workHandler: Handler) {
             })
     }
 
-    private fun requestCreateWebRtcTransport() {
+    private fun requestCreateWebRtcTransport(routerRtpCapabilities: String) {
         val producing = roomClientConfig.roomOptions.isProduce
         val consuming = roomClientConfig.roomOptions.isConsume
         val tcp = roomClientConfig.roomOptions.isForceTcp
@@ -148,61 +144,23 @@ class RoomClient(val workHandler: Handler) {
             this.put("consuming", consuming)
             this.put("sctpCapabilities", "")
         }.let {
-            mProtoo?.request("createWebRtcTransport", it, object : Peer.ClientRequestHandler {
+            mProtoo?.request("createWebRtcTransport", it, object: ClientRequestHandler{
                 override fun resolve(data: String?) {
-                    Logger.d(TAG, "requestCreateWebRtcTransport resolve() $data")
-                    try {
-                        data?.let {
-                            JSONObject(it)
-                        }?.let {
-                            if (producing) createSendTransport(it)
-                            if (consuming) createRecvTransport(it)
-                        } ?: run {
-                            throw NullPointerException("requestCreateWebRtcTransport null")
-                        }
-                    } catch (e: Exception) {
-                        Logger.e(TAG, "requestCreateWebRtcTransport", e)
-                    }
+                    val info = JSONObject(data)
+                    deviceLogic = DeviceLogic(routerRtpCapabilities, mProtoo!!)
+                    if (producing) deviceLogic?.createSendTransport(info)
+                    //if (consuming) createRecvTransport(info)
                 }
 
                 override fun reject(error: Long, errorReason: String?) {
-                    Logger.e(TAG, "createWebRtcTransport reject:$error, $errorReason")
+                    assert(false, { Logger.e(TAG, "errorReason$errorReason") })
                 }
             })
         }
     }
 
-
-/*    @WorkerThread
-    private void disableCamImpl() {
-        Logger.d(TAG, "disableCamImpl()");
-        if (mCamProducer == null) {
-            return;
-        }
-        mCamProducer.close();
-        mStore.removeProducer(mCamProducer.getId());
-
-        try {
-            mProtoo.syncRequest("closeProducer", req -> jsonPut(req, "producerId", mCamProducer.getId()));
-        } catch (ProtooException e) {
-            e.printStackTrace();
-            mStore.addNotify("error", "Error closing server-side webcam Producer: " + e.getMessage());
-        }
-        mCamProducer = null;
-
-        localDeviceHelper.disposeVideo();
-    }*/
-
-
     fun hideSelf() {
-        deviceLogic?.destroySelfTransport()?.let { id ->
-            try {
-                val resp = mProtoo?.syncRequest("closeProducer", toJsonObject("producerId", id))
-                Logger.d(TAG, "destroySelfTransport $resp")
-            } catch (e: Exception) {
-                Logger.e(TAG, "destroySelfTransport", e)
-            }
-        }
+        deviceLogic?.destroyVideo()
     }
 
     fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
@@ -210,19 +168,6 @@ class RoomClient(val workHandler: Handler) {
 
     fun showSelfAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
         deviceLogic?.createSelfAudioTransport(localDeviceHelper, mContext)
-
-    private fun createSendTransport(info: JSONObject) {
-        deviceLogic?.createSendTransport(
-            info,
-            object : OnCreateSendTransportEvent {
-                override fun onConnect(info: JSONObject) {
-                    requestConnectWebRtcTransport(info, "send")
-                }
-                override fun onProduce(info: JSONObject) = requestProduce(info)
-            }).let {
-            Logger.d(TAG, "createSendTransport $it")
-        }
-    }
 
     private fun createRecvTransport(info: JSONObject) {
         deviceLogic?.createRecvTransport(
@@ -234,10 +179,6 @@ class RoomClient(val workHandler: Handler) {
             }).let {
             Logger.d(TAG, "createRecvTransport $it")
         }
-    }
-
-    private fun createDevice(routerRtpCapabilities: String): DeviceLogic {
-        return DeviceLogic(roomClientConfig.roomOptions, routerRtpCapabilities)
     }
 
     private fun requestConnectWebRtcTransport(info: JSONObject, tag: String) {
@@ -276,16 +217,6 @@ class RoomClient(val workHandler: Handler) {
     }
 
 
-    private fun requestProduce(info: JSONObject): String {
-        Logger.d(TAG, "requestProduce")
-
-        try {
-            val response = mProtoo!!.syncRequest("produce", info)
-            return JSONObject(response).optString("id")
-        }catch (e: Exception){
-            return ""
-        }
-    }
 
 
     fun join(onRoomClientEvent: OnRoomClientEvent) {

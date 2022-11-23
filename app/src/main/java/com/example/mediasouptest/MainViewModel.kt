@@ -24,6 +24,15 @@ class MainViewModel: ViewModel() {
     var localDeviceHelper: LocalDeviceHelper? = null
     private var mWorkHandler: Handler? = null
 
+    fun asyncTask(runnable: () -> Unit) {
+/*        mWorkHandler?.post {
+            runnable.invoke()
+        }*/
+        viewModelScope.launch(Dispatchers.IO) {
+            runnable.invoke()
+        }
+    }
+
     fun loadConfig(context: Context) {
         roomClientConfig.loadFromShare(context)
         roomClientConfig.loadFixedRoomId()
@@ -36,7 +45,7 @@ class MainViewModel: ViewModel() {
     }
 
     fun initSdk() {
-        viewModelScope.launch(Dispatchers.IO) {
+        asyncTask{
             roomClient = RoomClient(mWorkHandler!!)
             roomClient?.init(roomClientConfig)
             roomClient?.start()
@@ -51,7 +60,7 @@ class MainViewModel: ViewModel() {
     }
 
     fun join() {
-        viewModelScope.launch(Dispatchers.IO) {
+        asyncTask{
             roomClient?.join(createOnRoomClientEvent())
         }
     }
@@ -68,20 +77,18 @@ class MainViewModel: ViewModel() {
     }
 
     fun showSelf(applicationContext: Context) {
-        viewModelScope.launch(Dispatchers.IO) {
+        asyncTask{
             localDeviceHelper = LocalDeviceHelper()
-
             roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
-
-            //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
+           //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
         }
 
     }
 
     fun hideSelf(){
-        viewModelScope.launch(Dispatchers.IO) {
+        asyncTask{
             roomClient?.hideSelf()
 
             localDeviceHelper?.dispose()
