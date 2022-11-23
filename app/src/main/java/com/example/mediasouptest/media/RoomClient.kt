@@ -41,28 +41,14 @@ class RoomClient(val workHandler: Handler) {
             mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
                 object : ClientRequestHandler {
                     override fun resolve(routerRtpCapabilities: String?) {
+                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!)
+
                         val producing = roomClientConfig.roomOptions.isProduce
                         val consuming = roomClientConfig.roomOptions.isConsume
                         val tcp = roomClientConfig.roomOptions.isForceTcp
 
-                        val req = JSONObject()
-                        req.put("forceTcp", tcp)
-                        req.put("producing", producing)
-                        req.put("consuming", consuming)
-                        req.put("sctpCapabilities", "")
-
-                        mProtoo?.request("createWebRtcTransport", req, object : ClientRequestHandler {
-                            override fun resolve(data: String?) {
-                                val info = JSONObject(data)
-                                deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!)
-                                if (producing) deviceLogic?.createSendTransport(info)
-                                //if (consuming) deviceLogic?.createRecvTransport(info)
-                            }
-
-                            override fun reject(error: Long, errorReason: String?) {
-                                assert(false, { Logger.e(TAG, "errorReason$errorReason") })
-                            }
-                        })
+                        if (producing) deviceLogic?.createSendTransport(tcp)
+                        if (consuming) deviceLogic?.createRecvTransport(tcp)
                     }
 
                     override fun reject(error: Long, errorReason: String?) {

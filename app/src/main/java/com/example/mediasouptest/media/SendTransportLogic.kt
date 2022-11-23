@@ -14,22 +14,38 @@ class SendTransportLogic(
 
     fun createSendTransport(
         device: Device,
-        info: JSONObject,
+        forceTcp: Boolean,
     ): Boolean {
-        val id = info.optString("id")
-        val iceParameters = info.optString("iceParameters")
-        val iceCandidates = info.optString("iceCandidates")
-        val dtlsParameters = info.optString("dtlsParameters")
-        val sctpParameters = info.optString("sctpParameters")
+        val req = JSONObject()
+        req.put("forceTcp", forceTcp)
+        req.put("producing", true)
+        req.put("consuming", false)
+        req.put("sctpCapabilities", "")
 
-        mSendTransport = device.createSendTransport(
-            listener,
-            id,
-            iceParameters,
-            iceCandidates,
-            dtlsParameters,
-            DeviceLogic.mocKSctpParameters
-        )
+        protoo.request("createWebRtcTransport", req, object : ClientRequestHandler {
+            override fun resolve(data: String?) {
+                val info = JSONObject(data)
+
+                val id = info.optString("id")
+                val iceParameters = info.optString("iceParameters")
+                val iceCandidates = info.optString("iceCandidates")
+                val dtlsParameters = info.optString("dtlsParameters")
+                val sctpParameters = info.optString("sctpParameters")
+
+                mSendTransport = device.createSendTransport(
+                    listener,
+                    id,
+                    iceParameters,
+                    iceCandidates,
+                    dtlsParameters,
+                    DeviceLogic.mocKSctpParameters
+                )
+            }
+
+            override fun reject(error: Long, errorReason: String?) {
+                assert(false, { Logger.e(RoomClient.TAG, "errorReason$errorReason") })
+            }
+        })
         return true
     }
 

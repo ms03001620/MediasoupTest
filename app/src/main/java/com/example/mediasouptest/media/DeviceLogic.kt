@@ -61,11 +61,11 @@ class DeviceLogic(
         }
 
 
-    fun createSendTransport(info: JSONObject) =
-        sendTransportLogic.createSendTransport(device, info)
+    fun createSendTransport(forceTcp: Boolean) =
+        sendTransportLogic.createSendTransport(device, forceTcp)
 
-    fun createRecvTransport(info: JSONObject) =
-        recvTransportLogic.createRecvTransport(device, info)
+    fun createRecvTransport(forceTcp: Boolean) =
+        recvTransportLogic.createRecvTransport(device, forceTcp)
 
     fun end() {
         sendTransportLogic.end()

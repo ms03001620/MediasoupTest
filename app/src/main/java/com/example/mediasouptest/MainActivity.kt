@@ -80,6 +80,8 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
+            initCamera()
+            mainViewModel.showSelf(applicationContext)
         }
     }
 }

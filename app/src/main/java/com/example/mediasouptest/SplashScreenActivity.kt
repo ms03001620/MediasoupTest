@@ -24,7 +24,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
     private fun enterMain() {
         findViewById<View>(R.id.mediasoup).postDelayed({
-            startActivity(Intent(this@SplashScreenActivity, TestMeActivity::class.java))
+            startActivity(Intent(this@SplashScreenActivity, MainActivity::class.java))
             finish()
         }, 1500)
     }

@@ -12,22 +12,38 @@ class RecvTransportLogic(
 ) {
     private var recvTransport: RecvTransport? = null
 
-    fun createRecvTransport(device: Device, info: JSONObject): Boolean {
-        Logger.d(TAG, "device#createRecvTransport() $info")
-        val id: String = info.optString("id")
-        val iceParameters: String = info.optString("iceParameters")
-        val iceCandidates: String = info.optString("iceCandidates")
-        val dtlsParameters: String = info.optString("dtlsParameters")
-        val sctpParameters: String = info.optString("sctpParameters")
+    fun createRecvTransport(device: Device, forceTcp: Boolean): Boolean {
+        val req = JSONObject()
+        req.put("forceTcp", forceTcp)
+        req.put("producing", false)
+        req.put("consuming", true)
+        req.put("sctpCapabilities", "")
 
-        recvTransport = device.createRecvTransport(
-            listener,
-            id,
-            iceParameters,
-            iceCandidates,
-            dtlsParameters,
-            DeviceLogic.mocKSctpParameters
-        )
+        protoo.request("createWebRtcTransport", req, object : Peer.ClientRequestHandler {
+            override fun resolve(data: String?) {
+                val info = JSONObject(data)
+
+                Logger.d(TAG, "device#createRecvTransport() $info")
+                val id: String = info.optString("id")
+                val iceParameters: String = info.optString("iceParameters")
+                val iceCandidates: String = info.optString("iceCandidates")
+                val dtlsParameters: String = info.optString("dtlsParameters")
+                val sctpParameters: String = info.optString("sctpParameters")
+
+                recvTransport = device.createRecvTransport(
+                    listener,
+                    id,
+                    iceParameters,
+                    iceCandidates,
+                    dtlsParameters,
+                    DeviceLogic.mocKSctpParameters
+                )
+            }
+
+            override fun reject(error: Long, errorReason: String?) {
+                assert(false, { Logger.e(RoomClient.TAG, "errorReason$errorReason") })
+            }
+        })
         return true
     }
 
