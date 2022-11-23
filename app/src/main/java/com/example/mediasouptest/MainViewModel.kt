@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.ConsumerHolder
+import com.example.mediasouptest.media.OnRoomClientEvent
 import com.example.mediasouptest.media.RoomClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,7 +49,6 @@ class MainViewModel: ViewModel() {
         asyncTask{
             roomClient = RoomClient(mWorkHandler!!)
             roomClient?.init(roomClientConfig)
-            roomClient?.start()
         }
     }
 
@@ -66,7 +66,7 @@ class MainViewModel: ViewModel() {
     }
 
 
-    private fun createOnRoomClientEvent() = object : RoomClient.OnRoomClientEvent {
+    private fun createOnRoomClientEvent() = object : OnRoomClientEvent {
         override fun onPeersChange(peers: List<Peer>) {
             peersLiveData.postValue(peers)
         }

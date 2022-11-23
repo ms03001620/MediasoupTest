@@ -11,7 +11,7 @@ import org.webrtc.VideoTrack
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-class RoomMessageHandler(val callback: RoomClient.OnRoomClientEvent) {
+class RoomMessageHandler(val callback: OnRoomClientEvent) {
     private val mConsumers  = ConcurrentHashMap<String, ConsumerHolder>()
     private val mPeers = CopyOnWriteArrayList<Peer>()
 

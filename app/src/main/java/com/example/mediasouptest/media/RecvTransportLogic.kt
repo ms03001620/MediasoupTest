@@ -3,13 +3,16 @@ package com.example.mediasouptest.media
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
+import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
-class RecvTransportLogic {
+class RecvTransportLogic(
+    private val protoo: Protoo
+) {
     private var recvTransport: RecvTransport? = null
 
-    fun createRecvTransport(device: Device, info: JSONObject, callback: OnCreateRecvTransportEvent): Boolean {
+    fun createRecvTransport(device: Device, info: JSONObject): Boolean {
         Logger.d(TAG, "device#createRecvTransport() $info")
         val id: String = info.optString("id")
         val iceParameters: String = info.optString("iceParameters")
@@ -18,7 +21,7 @@ class RecvTransportLogic {
         val sctpParameters: String = info.optString("sctpParameters")
 
         recvTransport = device.createRecvTransport(
-            createRecvTransportListener(callback),
+            listener,
             id,
             iceParameters,
             iceCandidates,
@@ -28,12 +31,21 @@ class RecvTransportLogic {
         return true
     }
 
-    private fun createRecvTransportListener(callback: OnCreateRecvTransportEvent)= object: RecvTransport.Listener{
+    private val listener = object: RecvTransport.Listener{
         override fun onConnect(transport: Transport, dtlsParameters: String?) {
             val req = JSONObject()
             req.put("transportId", transport.getId())
             req.put("dtlsParameters", JsonUtils.toJsonObject(dtlsParameters))
-            callback.onConnect(req)
+
+            protoo.request("connectWebRtcTransport", req, object : Peer.ClientRequestHandler {
+                override fun resolve(data: String?) {
+                    Logger.d(TAG, "connectWebRtcTransport recv $data")
+                }
+
+                override fun reject(error: Long, errorReason: String?) {
+                    Logger.e(TAG, "connectWebRtcTransport recv $error, $errorReason")
+                }
+            })
         }
 
         override fun onConnectionStateChange(transport: Transport, connectionState: String?) {

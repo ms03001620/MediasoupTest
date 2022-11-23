@@ -17,7 +17,7 @@ class DeviceLogic(
 ) {
     private val device = Device()
     private val sendTransportLogic = SendTransportLogic(protoo)
-    private val recvTransportLogic = RecvTransportLogic()
+    private val recvTransportLogic = RecvTransportLogic(protoo)
     private var selfProducerVideo: Producer? = null
     private var selfProducerAudio: Producer? = null
 
@@ -64,8 +64,8 @@ class DeviceLogic(
     fun createSendTransport(info: JSONObject) =
         sendTransportLogic.createSendTransport(device, info)
 
-    fun createRecvTransport(info: JSONObject, callback: OnCreateRecvTransportEvent) =
-        recvTransportLogic.createRecvTransport(device, info, callback)
+    fun createRecvTransport(info: JSONObject) =
+        recvTransportLogic.createRecvTransport(device, info)
 
     fun end() {
         sendTransportLogic.end()
