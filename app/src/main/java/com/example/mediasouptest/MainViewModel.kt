@@ -46,16 +46,12 @@ class MainViewModel: ViewModel() {
     }
 
     fun initSdk() {
-        asyncTask{
-            roomClient = RoomClient(mWorkHandler!!)
-            roomClient?.init(roomClientConfig)
-        }
+        roomClient = RoomClient(mWorkHandler!!)
+        roomClient?.init(roomClientConfig)
     }
 
     fun close() {
         // 主线程调用需要直接关闭
-        localDeviceHelper?.dispose()
-        localDeviceHelper=null
         roomClient?.end()
     }
 
@@ -77,23 +73,21 @@ class MainViewModel: ViewModel() {
     }
 
     fun showSelf(applicationContext: Context) {
-        asyncTask{
+        if (localDeviceHelper == null) {
             localDeviceHelper = LocalDeviceHelper()
+        }
+        asyncTask {
             roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
-           //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
+            //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
         }
-
     }
 
     fun hideSelf(){
-        asyncTask{
-            roomClient?.hideSelf()
-
-            localDeviceHelper?.dispose()
-            localDeviceHelper=null
-        }
+        localDeviceHelper?.dispose()
+        localDeviceHelper=null
+        roomClient?.hideSelf()
     }
 
 
