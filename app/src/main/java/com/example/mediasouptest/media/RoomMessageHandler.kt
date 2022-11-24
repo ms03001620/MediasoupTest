@@ -8,11 +8,10 @@ import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.model.Peer
 import org.mediasoup.droid.lib.model.Peers
 import org.protoojs.droid.Message
-import org.webrtc.VideoTrack
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-class RoomMessageHandler(val callback: OnRoomClientEvent) {
+class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
     private val mConsumers  = ConcurrentHashMap<String, ConsumerHolder>()
     private val mPeers = CopyOnWriteArrayList<Peer>()
 
@@ -49,7 +48,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent) {
         assert(consumer.isClosed)
         mConsumers.remove(consumer.id)?.let {
             Logger.d(TAG, "removeClose:${it.peerId}")
-            callback.onVideoConsumersChange(getVideoConsumers())
+            callback.onConsumersChange(geConsumers())
         }
     }
 
@@ -57,7 +56,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent) {
         mConsumers.remove(consumerId)?.let {
             try {
                 it.consumer.close()
-                callback.onVideoConsumersChange(getVideoConsumers())
+                callback.onConsumersChange(geConsumers())
             } catch (e: Exception) {
                 Logger.e(TAG, "removeConsumerAndClose", e)
             }
@@ -67,14 +66,10 @@ class RoomMessageHandler(val callback: OnRoomClientEvent) {
     fun add(consumerHolder: ConsumerHolder) {
         Logger.d(TAG, "add: ${consumerHolder.println()}")
         mConsumers[consumerHolder.consumer.id] = consumerHolder
-        callback.onVideoConsumersChange(getVideoConsumers())
+        callback.onConsumersChange(geConsumers())
     }
 
-    fun getVideoConsumers() = mConsumers.toMap().filter {
-        it.value.consumer.track is VideoTrack
-    }.map {
-        it.value
-    }
+    fun geConsumers() = mConsumers.map { it.value }
 
     fun handleNotification(notification: Message.Notification) {
         if (notification.method == "downlinkBwe" ||
@@ -160,5 +155,12 @@ class RoomMessageHandler(val callback: OnRoomClientEvent) {
 
     companion object{
         const val TAG = "RoomMessageHandler"
+    }
+
+    //Consumer.Listener
+    override fun onTransportClose(consumer: Consumer) {
+        Logger.d(TAG, "onTransportClose:${consumer.id}")
+        assert(false)// TODO Consumer close by native
+        removeClose(consumer)
     }
 }

@@ -77,11 +77,10 @@ class RecvTransportLogic(
 
     fun onNewConsumer(
         request: Message.Request,
-        callback: Consumer.Listener
-    ): ConsumerHolder? {
+        callback: Consumer.Listener?
+    ): ConsumerHolder {
         if (recvTransport == null || recvTransport?.isClosed == true) {
-            Logger.w(TAG, "onNewConsumer: recvTransport null")
-            return null
+            throw IllegalStateException("onNewConsumer recvTransport $recvTransport")
         }
 
         val data = request.data
@@ -99,7 +98,7 @@ class RecvTransportLogic(
         if (consumer != null) {
             return ConsumerHolder(peerId, consumer)
         } else {
-            return null
+            throw IllegalStateException("recvTransport?.consume null")
         }
     }
 

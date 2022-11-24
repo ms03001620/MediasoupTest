@@ -63,19 +63,9 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
             try {
                 when (request.method) {
                     "newConsumer" -> {
-                        if (!roomClientConfig.roomOptions.isConsume) {
-                            handler.reject(-1, "I do not want to consume")
-                        } else {
-                            deviceLogic?.onNewConsumer(request, object : Consumer.Listener {
-                                override fun onTransportClose(consumer: Consumer) {
-                                    Logger.d(TAG, "onTransportClose:${consumer.id}")
-                                    roomMessageHandler?.removeClose(consumer)
-                                }
-                            })?.let { newConsumer ->
-                                Logger.d(TAG, "newConsumer:${newConsumer.println()}")
-                                roomMessageHandler?.add(newConsumer)
-                                handler.accept()
-                            }
+                        deviceLogic?.onNewConsumer(request, roomMessageHandler)?.let {
+                            roomMessageHandler?.add(it)
+                            handler.accept()
                         }
                     }
                     else -> {

@@ -75,7 +75,7 @@ class DeviceLogic(
 
     fun getRtpCapabilities() = rtpCapabilities
 
-    fun onNewConsumer(request: Message.Request,callback: Consumer.Listener) =
+    fun onNewConsumer(request: Message.Request,callback: Consumer.Listener?) =
         recvTransportLogic.onNewConsumer(request, callback)
 
     companion object{

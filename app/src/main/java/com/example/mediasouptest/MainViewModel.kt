@@ -15,6 +15,7 @@ import org.mediasoup.droid.Producer
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.model.Peer
+import org.webrtc.VideoTrack
 
 class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
@@ -70,8 +71,8 @@ class MainViewModel: ViewModel() {
             peersLiveData.postValue(peers)
         }
 
-        override fun onVideoConsumersChange(consumers: List<ConsumerHolder>) {
-            onNewConsumer.postValue(consumers)
+        override fun onConsumersChange(consumers: List<ConsumerHolder>) {
+            onNewConsumer.postValue(consumers.filter { it.consumer.track is VideoTrack })
         }
 
         override fun onJoin() {
