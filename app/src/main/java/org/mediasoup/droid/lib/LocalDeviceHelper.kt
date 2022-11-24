@@ -2,7 +2,6 @@ package org.mediasoup.droid.lib
 
 import android.content.Context
 import android.os.Looper
-import com.example.mediasouptest.media.RoomClient
 import org.mediasoup.droid.Logger
 import org.webrtc.AudioTrack
 import org.webrtc.CameraVideoCapturer.CameraSwitchHandler
@@ -66,7 +65,7 @@ class LocalDeviceHelper {
     fun dispose() {
         closeAudio()
         closeVideo()
-        Logger.w(RoomClient.TAG, "onDisconnected ${Thread.currentThread().name}, ${Looper.myLooper()== Looper.myLooper()}")
+        Logger.w("LocalDeviceHelper", "onDisconnected ${Thread.currentThread().name}, ${Looper.myLooper()== Looper.myLooper()}")
         peerConnectionUtils.dispose()
     }
 

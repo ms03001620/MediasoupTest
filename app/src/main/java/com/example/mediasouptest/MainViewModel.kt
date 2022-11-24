@@ -19,6 +19,7 @@ import org.mediasoup.droid.lib.model.Peer
 class MainViewModel: ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
+    val joinedLiveData = MutableLiveData<Boolean>()
     var roomClient: RoomClient? = null
     val onNewConsumer = SingleLiveEvent<List<ConsumerHolder>>()
     val onProductSelf = SingleLiveEvent<Producer>()
@@ -46,7 +47,9 @@ class MainViewModel: ViewModel() {
     }
 
     fun initSdk() {
-        roomClient = RoomClient(mWorkHandler!!)
+        roomClient = RoomClient(mWorkHandler!!, {
+            join()
+        })
         roomClient?.init(roomClientConfig)
     }
 
@@ -70,6 +73,10 @@ class MainViewModel: ViewModel() {
         override fun onVideoConsumersChange(consumers: List<ConsumerHolder>) {
             onNewConsumer.postValue(consumers)
         }
+
+        override fun onJoin() {
+            joinedLiveData.postValue(true)
+        }
     }
 
     fun showSelf(applicationContext: Context) {
@@ -85,8 +92,8 @@ class MainViewModel: ViewModel() {
     }
 
     fun hideSelf(){
-        localDeviceHelper?.dispose()
-        localDeviceHelper=null
+        //localDeviceHelper?.dispose()
+        //localDeviceHelper=null
         roomClient?.hideSelf()
     }
 

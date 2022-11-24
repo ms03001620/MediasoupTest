@@ -16,7 +16,7 @@ import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
 
-class RoomClient(val workHandler: Handler) {
+class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     private lateinit var roomClientConfig: RoomClientConfig
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
@@ -49,6 +49,8 @@ class RoomClient(val workHandler: Handler) {
 
                         if (producing) deviceLogic?.createSendTransport(tcp)
                         if (consuming) deviceLogic?.createRecvTransport(tcp)
+
+                        callback.invoke()// simply to join() logic
                     }
 
                     override fun reject(error: Long, errorReason: String?) {
@@ -118,16 +120,13 @@ class RoomClient(val workHandler: Handler) {
             }.let { json ->
                 protoo.request("join", json, object : ClientRequestHandler {
                     override fun resolve(data: String?) {
+                        onRoomClientEvent.onJoin()
                         roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
-                        val json = toJsonObject(data)
-                        Logger.d(TAG, "onJoinRoom ${json.toString()}")
-                        val peersArray = json.optJSONArray("peers") ?: JSONArray()
-                        Logger.d(TAG, "peers size ${peersArray.length()}")
-                        roomMessageHandler?.addPeers(peersArray)
+                        roomMessageHandler?.addPeers(data)
                     }
 
                     override fun reject(error: Long, errorReason: String?) {
-                        Logger.e(TAG, "join reject:$error, $errorReason")
+                        assert(false, { Logger.e(TAG, "join") })
                     }
                 })
             }

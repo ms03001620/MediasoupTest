@@ -50,6 +50,9 @@ class TestMeActivity : AppCompatActivity() {
         mainViewModel.onProductSelf.observe(this){
             showOne(it)
         }
+        mainViewModel.joinedLiveData.observe(this) {
+            binding.btnJoin.isEnabled = false
+        }
     }
 
     private fun showOne(producer: Producer) {

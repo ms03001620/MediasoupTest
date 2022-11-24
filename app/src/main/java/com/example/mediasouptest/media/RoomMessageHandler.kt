@@ -4,6 +4,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
+import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.model.Peer
 import org.mediasoup.droid.lib.model.Peers
 import org.protoojs.droid.Message
@@ -15,7 +16,10 @@ class RoomMessageHandler(val callback: OnRoomClientEvent) {
     private val mConsumers  = ConcurrentHashMap<String, ConsumerHolder>()
     private val mPeers = CopyOnWriteArrayList<Peer>()
 
-    fun addPeers(peersArray: JSONArray) {
+    fun addPeers(data: String?) {
+        val json = JsonUtils.toJsonObject(data)
+        Logger.d(TAG, "onJoinRoom ${json.toString()}")
+        val peersArray = json.optJSONArray("peers") ?: JSONArray()
         Peers.createPeers(peersArray).let {
             addPeers(it)
         }

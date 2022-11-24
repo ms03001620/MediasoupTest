@@ -43,7 +43,7 @@ class SendTransportLogic(
             }
 
             override fun reject(error: Long, errorReason: String?) {
-                assert(false, { Logger.e(RoomClient.TAG, "errorReason$errorReason") })
+                assert(false, { Logger.e(TAG, "errorReason$errorReason") })
             }
         })
         return true
