@@ -51,7 +51,7 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
         return data.size
     }
 
-    fun onNewConsumer(consumers: List<ConsumerHolder>) {
+    fun onVideoConsumer(consumers: List<ConsumerHolder>) {
         consumerList.clear()
         consumerList.addAll(consumers)
         notifyDataSetChanged()

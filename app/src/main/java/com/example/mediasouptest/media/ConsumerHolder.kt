@@ -1,5 +1,8 @@
 package com.example.mediasouptest.media
 
+import android.os.Looper
+import android.util.Log
+import org.mediasoup.droid.BuildConfig
 import org.mediasoup.droid.Consumer
 
 data class ConsumerHolder(val peerId: String, val consumer: Consumer)
@@ -24,4 +27,17 @@ fun ConsumerHolder.println(): String {
     sb.append(",producerId:")
     sb.append(consumer.producerId)
     return sb.toString()
+}
+
+fun printThread(
+    name: String? = null
+) {
+    if (BuildConfig.DEBUG) {
+        var methodName = name
+        if (methodName == null) {
+            methodName = Thread.currentThread().stackTrace[4].toString()// 4 is printThread parent method
+        }
+        val isMain = (Looper.myLooper() == Looper.getMainLooper())
+        Log.w("ThreadInfo", "isMain:$isMain, $methodName, ${Thread.currentThread().name}")
+    }
 }

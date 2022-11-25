@@ -37,8 +37,8 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
         }
-        mainViewModel.onNewConsumer.observe(this){
-            showOne(it)
+        mainViewModel.onConsumerChange.observe(this){
+            showOne(it.filter { it.consumer.track is VideoTrack })
         }
     }
 

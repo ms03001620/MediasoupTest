@@ -55,29 +55,14 @@
 
         </LinearLayout>
 
-<!--        <ScrollView
-            android:layout_width="200dp"
-            android:layout_height="200dp">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <com.example.mediasouptest.widget.VideoWallpaper
-                    android:id="@+id/renderer"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp" />
-            </FrameLayout>
-
-
-        </ScrollView>-->
-
-
-        <TextView
-            android:id="@+id/text_message"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="match_parent">
 
-
+            <TextView
+                android:id="@+id/text_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
     </LinearLayout>
 </layout>

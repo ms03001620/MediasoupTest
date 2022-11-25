@@ -1,7 +1,7 @@
 package com.example.mediasouptest.media
 
 import android.content.Context
-import org.json.JSONObject
+import android.os.Handler
 import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Device
 import org.mediasoup.droid.Logger
@@ -13,11 +13,12 @@ import org.protoojs.droid.Message
 
 class DeviceLogic(
     private val routerRtpCapabilities: String,
-    private val protoo: Protoo
+    private val protoo: Protoo,
+    private val workHandler: Handler
 ) {
     private val device = Device()
-    private val sendTransportLogic = SendTransportLogic(protoo)
-    private val recvTransportLogic = RecvTransportLogic(protoo)
+    private val sendTransportLogic = SendTransportLogic(protoo, workHandler)
+    private val recvTransportLogic = RecvTransportLogic(protoo, workHandler)
     private var selfProducerVideo: Producer? = null
     private var selfProducerAudio: Producer? = null
 

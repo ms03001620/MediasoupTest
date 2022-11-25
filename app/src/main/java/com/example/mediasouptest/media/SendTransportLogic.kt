@@ -1,6 +1,7 @@
 package com.example.mediasouptest.media
 
 import android.content.Context
+import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.LocalDeviceHelper
@@ -8,7 +9,8 @@ import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Peer.ClientRequestHandler
 
 class SendTransportLogic(
-    private val protoo: Protoo
+    private val protoo: Protoo,
+    private val workHandler: Handler
 ) {
     private var mSendTransport: SendTransport? = null
 
@@ -136,7 +138,7 @@ class SendTransportLogic(
     }
 
     fun end() {
-        mSendTransport?.close()
+        //mSendTransport?.close()
         mSendTransport?.dispose()
         mSendTransport = null
     }

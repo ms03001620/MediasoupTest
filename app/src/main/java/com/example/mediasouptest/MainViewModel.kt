@@ -22,7 +22,7 @@ class MainViewModel: ViewModel() {
     val peersLiveData = MutableLiveData<List<Peer>>()
     val joinedLiveData = MutableLiveData<Boolean>()
     var roomClient: RoomClient? = null
-    val onNewConsumer = SingleLiveEvent<List<ConsumerHolder>>()
+    val onConsumerChange = SingleLiveEvent<List<ConsumerHolder>>()
     val onProductSelf = SingleLiveEvent<Producer>()
     var localDeviceHelper: LocalDeviceHelper? = null
     private var mWorkHandler: Handler? = null
@@ -57,12 +57,11 @@ class MainViewModel: ViewModel() {
     fun close() {
         // 主线程调用需要直接关闭
         roomClient?.end()
+        roomClient = null
     }
 
     fun join() {
-        asyncTask{
-            roomClient?.join(createOnRoomClientEvent())
-        }
+        roomClient?.join(createOnRoomClientEvent())
     }
 
 
@@ -72,7 +71,7 @@ class MainViewModel: ViewModel() {
         }
 
         override fun onConsumersChange(consumers: List<ConsumerHolder>) {
-            onNewConsumer.postValue(consumers.filter { it.consumer.track is VideoTrack })
+            onConsumerChange.postValue(consumers)
         }
 
         override fun onJoin() {

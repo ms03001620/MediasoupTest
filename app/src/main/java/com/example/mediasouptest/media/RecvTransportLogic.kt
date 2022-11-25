@@ -1,5 +1,6 @@
 package com.example.mediasouptest.media
 
+import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
@@ -8,7 +9,8 @@ import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
 class RecvTransportLogic(
-    private val protoo: Protoo
+    private val protoo: Protoo,
+    private val workHandler: Handler
 ) {
     private var recvTransport: RecvTransport? = null
 
@@ -70,7 +72,7 @@ class RecvTransportLogic(
     }
 
     fun end() {
-        recvTransport?.close()
+        //recvTransport?.close()
         recvTransport?.dispose()
         recvTransport = null
     }

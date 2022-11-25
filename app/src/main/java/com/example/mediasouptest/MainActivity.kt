@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.PeerConnectionUtils
+import org.webrtc.VideoTrack
 
 class MainActivity : AppCompatActivity() {
     private val mainViewModel by lazy {
@@ -47,8 +48,8 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.peersLiveData.observe(this) {
             adapter.setPeers(it)
         }
-        mainViewModel.onNewConsumer.observe(this){
-            adapter.onNewConsumer(it)
+        mainViewModel.onConsumerChange.observe(this) {
+            adapter.onVideoConsumer(it.filter { it.consumer.track is VideoTrack })
         }
     }
 

@@ -64,7 +64,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
     }
 
     fun add(consumerHolder: ConsumerHolder) {
-        Logger.d(TAG, "add: ${consumerHolder.println()}")
+        Logger.d(TAG, "addConsumer: ${consumerHolder.println()}")
         mConsumers[consumerHolder.consumer.id] = consumerHolder
         callback.onConsumersChange(geConsumers())
     }

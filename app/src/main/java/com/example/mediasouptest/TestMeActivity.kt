@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.mediasouptest.databinding.ActivityTestMeBinding
+import com.example.mediasouptest.media.println
 import com.example.mediasouptest.widget.VideoWallpaper
 import org.mediasoup.droid.Producer
 import org.mediasoup.droid.lib.PeerConnectionUtils
@@ -38,14 +39,12 @@ class TestMeActivity : AppCompatActivity() {
 
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
-            val old = binding.textMessage.text
             val sb = StringBuilder()
-            sb.append(old)
             it.forEach {
                 sb.append("\n")
                 sb.append(it.toString())
             }
-            binding.textMessage.text = sb.toString()
+            printLogs(sb.toString())
         }
         mainViewModel.onProductSelf.observe(this){
             showOne(it)
@@ -53,6 +52,20 @@ class TestMeActivity : AppCompatActivity() {
         mainViewModel.joinedLiveData.observe(this) {
             binding.btnJoin.isEnabled = false
         }
+        mainViewModel.onConsumerChange.observe(this) {
+            it.forEach {
+                printLogs("\n"+it.println())
+            }
+        }
+    }
+
+    private fun printLogs(newLog: String){
+        val old = binding.textMessage.text
+        val sb = StringBuilder()
+        sb.append(old)
+        sb.append("\n")
+        sb.append(newLog.toString())
+        binding.textMessage.text = sb.toString()
     }
 
     private fun showOne(producer: Producer) {

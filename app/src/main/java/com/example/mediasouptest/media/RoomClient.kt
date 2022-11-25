@@ -2,9 +2,7 @@ package com.example.mediasouptest.media
 
 import android.content.Context
 import android.os.Handler
-import org.json.JSONArray
 import org.json.JSONObject
-import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.JsonUtils.toJsonObject
@@ -41,13 +39,13 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
             mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
                 object : ClientRequestHandler {
                     override fun resolve(routerRtpCapabilities: String?) {
-                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!)
+                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler)
 
                         val producing = roomClientConfig.roomOptions.isProduce
                         val consuming = roomClientConfig.roomOptions.isConsume
                         val tcp = roomClientConfig.roomOptions.isForceTcp
 
-                        if (producing) deviceLogic?.createSendTransport(tcp)
+                        //if (producing) deviceLogic?.createSendTransport(tcp)
                         if (consuming) deviceLogic?.createRecvTransport(tcp)
 
                         callback.invoke()// simply to join() logic
@@ -124,6 +122,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     }
 
     fun end() {
+        printThread()
         deviceLogic?.end()
         deviceLogic = null
         roomMessageHandler = null
