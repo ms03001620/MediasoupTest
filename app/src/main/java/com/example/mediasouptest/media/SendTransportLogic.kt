@@ -58,12 +58,15 @@ class SendTransportLogic(
     fun createProducerVideo(
         context: Context,
         localDeviceHelper: LocalDeviceHelper,
-        autoCloseListener: Producer.Listener,
     ): Producer {
         assert(mSendTransport != null)
         this.localDeviceHelper = localDeviceHelper
         this.localDeviceHelper?.enableCamImpl(context)
-        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null).also {
+        return mSendTransport!!.produce(object : Producer.Listener {
+            override fun onTransportClose(producer: Producer?) {
+                assert(false, { Logger.e(TAG, "v onTransportClose${producer?.id}") })
+            }
+        }, localDeviceHelper.getVideoTrack(), null, null, null).also {
             selfProducerVideo = it
         }
     }
@@ -71,12 +74,15 @@ class SendTransportLogic(
     fun createProducerAudio(
         context: Context,
         localDeviceHelper: LocalDeviceHelper,
-        autoCloseListener: Producer.Listener,
     ): Producer {
         assert(mSendTransport != null)
         this.localDeviceHelper = localDeviceHelper
         this.localDeviceHelper?.enableMicImpl(context)
-        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.localAudioTrack, null, null, null).also {
+        return mSendTransport!!.produce(object : Producer.Listener {
+            override fun onTransportClose(producer: Producer?) {
+                assert(false, { Logger.e(TAG, "a onTransportClose${producer?.id}") })
+            }
+        }, localDeviceHelper.localAudioTrack, null, null, null).also {
             selfProducerAudio = it
         }
     }

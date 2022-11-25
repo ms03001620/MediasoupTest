@@ -130,11 +130,11 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
         mProtoo = null
     }
 
-    fun openCamera(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        deviceLogic?.createProducerVideo(localDeviceHelper, mContext)
+    fun openCamera(localDeviceHelper: LocalDeviceHelper, context: Context) =
+        deviceLogic?.createProducerVideo(context, localDeviceHelper)
 
-    fun openMic(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        deviceLogic?.createProducerAudio(localDeviceHelper, mContext)
+    fun openMic(localDeviceHelper: LocalDeviceHelper, context: Context) =
+        deviceLogic?.createProducerAudio(context, localDeviceHelper)
 
 
     fun closeCamera() = deviceLogic?.closeProducerVideo()

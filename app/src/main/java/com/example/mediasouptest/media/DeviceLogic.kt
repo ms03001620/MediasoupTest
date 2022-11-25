@@ -35,26 +35,18 @@ class DeviceLogic(
         sendTransportLogic.closeProducerVideo()
     }
 
-    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, context: Context): Producer {
+    fun createProducerVideo(context: Context, localDeviceHelper: LocalDeviceHelper): Producer {
         if (device.canProduce("video").not()) {
             throw UnsupportedOperationException("producer video")
         }
-        return sendTransportLogic.createProducerVideo(context, localDeviceHelper, object : Producer.Listener {
-            override fun onTransportClose(producer: Producer?) {
-                assert(false)
-            }
-        })
+        return sendTransportLogic.createProducerVideo(context, localDeviceHelper)
     }
 
-    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper, context: Context): Producer {
+    fun createProducerAudio(context: Context, localDeviceHelper: LocalDeviceHelper): Producer {
         if (device.canProduce("audio").not()) {
             throw UnsupportedOperationException("producer audio")
         }
-        return sendTransportLogic.createProducerAudio(context, localDeviceHelper, object : Producer.Listener {
-            override fun onTransportClose(producer: Producer?) {
-                assert(false)
-            }
-        })
+        return sendTransportLogic.createProducerAudio(context, localDeviceHelper)
     }
 
     fun createSendTransport(forceTcp: Boolean) =
