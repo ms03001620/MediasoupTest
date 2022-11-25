@@ -80,22 +80,19 @@ class MainViewModel : ViewModel() {
 
     fun openCamera(applicationContext: Context) {
         initLocalDeviceHelper()
-        asyncTask {
-            roomClient?.openCamera(localDeviceHelper!!, applicationContext)?.let {
-                onProductSelf.postValue(it)
-            }
-            //roomClient?.openMic(localDeviceHelper!!, applicationContext)
+        roomClient?.openCamera(localDeviceHelper!!, applicationContext)?.let {
+            onProductSelf.postValue(it)
         }
     }
 
     fun closeCamera() {
-/*        asyncTask {
-            roomClient?.closeCamera()
-        }*/
         roomClient?.closeCamera()
     }
 
 
+    fun test(b: Boolean){
+        localDeviceHelper?.dispose()
+    }
 
 
     fun initLocalDeviceHelper(){
