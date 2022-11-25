@@ -64,7 +64,7 @@ class SendTransportLogic(
         this.localDeviceHelper?.enableCamImpl(context)
         return mSendTransport!!.produce(object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
-                assert(false, { Logger.e(TAG, "v onTransportClose${producer?.id}") })
+                assert(false)
             }
         }, localDeviceHelper.getVideoTrack(), null, null, null).also {
             selfProducerVideo = it
@@ -134,6 +134,12 @@ class SendTransportLogic(
             connectionState: String?
         ) {
             Logger.w(TAG, "onConnectionStateChange:${transport.id}, state:${connectionState}")
+            when(connectionState){
+                // mSendTransport.close() crash
+                "closed" -> {
+                    end()
+                }
+            }
         }
 
         override fun onProduceData(
@@ -186,6 +192,10 @@ class SendTransportLogic(
                 }
             }
         )
+    }
+
+    fun testCall() {
+        mSendTransport?.dispose()
     }
 
     companion object {

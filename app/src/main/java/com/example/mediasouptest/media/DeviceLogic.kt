@@ -66,6 +66,10 @@ class DeviceLogic(
     fun onNewConsumer(request: Message.Request,callback: Consumer.Listener?) =
         recvTransportLogic.onNewConsumer(request, callback)
 
+    fun testCall() {
+        sendTransportLogic.testCall()
+    }
+
     companion object{
         const val TAG = "DeviceLogic"
 

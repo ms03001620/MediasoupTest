@@ -91,7 +91,8 @@ class MainViewModel : ViewModel() {
 
 
     fun test(b: Boolean){
-        localDeviceHelper?.dispose()
+        //localDeviceHelper?.dispose()
+        roomClient?.testCall()
     }
 
 

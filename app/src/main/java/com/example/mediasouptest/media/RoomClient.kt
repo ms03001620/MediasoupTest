@@ -139,9 +139,24 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
 
     fun closeCamera() = deviceLogic?.closeProducerVideo()
     fun closeMic() = deviceLogic?.closeProducerAudio()
+    fun testCall() {
+        deviceLogic?.testCall()
+    }
 
 
     companion object {
         const val TAG = "RoomClient"
     }
 }
+
+
+/*
+mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
+object : ClientRequestHandler {
+    override fun resolve(routerRtpCapabilities: String?) {
+        deviceLogic?.closeSendT()
+    }
+
+    override fun reject(error: Long, errorReason: String?) {
+    }
+})*/
