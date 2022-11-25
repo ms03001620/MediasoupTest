@@ -27,11 +27,6 @@ class DeviceLogic(
         rtpCapabilities = device.rtpCapabilities
     }
 
-    fun closeProducer() {
-        sendTransportLogic.closeProducerVideo()
-        sendTransportLogic.closeProducerAudio()
-    }
-
     fun closeProducerAudio() {
         sendTransportLogic.closeProducerAudio()
     }
@@ -40,30 +35,27 @@ class DeviceLogic(
         sendTransportLogic.closeProducerVideo()
     }
 
-    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
+    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, context: Context): Producer {
         if (device.canProduce("video").not()) {
             throw UnsupportedOperationException("producer video")
         }
-        localDeviceHelper.enableCamImpl(mContext)
-        return sendTransportLogic.createProducerVideo(localDeviceHelper, object : Producer.Listener {
+        return sendTransportLogic.createProducerVideo(context, localDeviceHelper, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
         })
     }
 
-    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
+    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper, context: Context): Producer {
         if (device.canProduce("audio").not()) {
             throw UnsupportedOperationException("producer audio")
         }
-        localDeviceHelper.enableMicImpl(mContext)
-        return sendTransportLogic.createProducerAudio(localDeviceHelper, object : Producer.Listener {
+        return sendTransportLogic.createProducerAudio(context, localDeviceHelper, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
         })
     }
-
 
     fun createSendTransport(forceTcp: Boolean) =
         sendTransportLogic.createSendTransport(device, forceTcp)

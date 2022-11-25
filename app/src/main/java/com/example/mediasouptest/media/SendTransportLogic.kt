@@ -16,6 +16,7 @@ class SendTransportLogic(
     private var mSendTransport: SendTransport? = null
     private var selfProducerVideo: Producer? = null
     private var selfProducerAudio: Producer? = null
+    private var localDeviceHelper: LocalDeviceHelper? = null
 
     fun createSendTransport(
         device: Device,
@@ -55,21 +56,27 @@ class SendTransportLogic(
     }
 
     fun createProducerVideo(
+        context: Context,
         localDeviceHelper: LocalDeviceHelper,
-        autoCloseListener: Producer.Listener
+        autoCloseListener: Producer.Listener,
     ): Producer {
         assert(mSendTransport != null)
+        this.localDeviceHelper = localDeviceHelper
+        this.localDeviceHelper?.enableCamImpl(context)
         return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null).also {
             selfProducerVideo = it
         }
     }
 
     fun createProducerAudio(
+        context: Context,
         localDeviceHelper: LocalDeviceHelper,
-        autoCloseListener: Producer.Listener
+        autoCloseListener: Producer.Listener,
     ): Producer {
         assert(mSendTransport != null)
-        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null).also {
+        this.localDeviceHelper = localDeviceHelper
+        this.localDeviceHelper?.enableMicImpl(context)
+        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.localAudioTrack, null, null, null).also {
             selfProducerAudio = it
         }
     }
@@ -91,7 +98,6 @@ class SendTransportLogic(
                     Logger.e(TAG, "onConnect errorReason$errorReason")
                 }
             })
-
         }
 
         override fun onProduce(
@@ -141,34 +147,39 @@ class SendTransportLogic(
     }
 
     fun end() {
-        //mSendTransport?.close()
+        closeProducerVideo()
+        closeProducerAudio()
         mSendTransport?.dispose()
     }
 
     fun closeProducerVideo() {
-        closeProducer(selfProducerVideo)
+        localDeviceHelper?.disposeVideo()
+        selfProducerVideo?.let {
+            closeProducer(it)
+        }
     }
 
     fun closeProducerAudio() {
-        closeProducer(selfProducerAudio)
+        localDeviceHelper?.disposeAudio()
+        selfProducerAudio?.let {
+            closeProducer(it)
+        }
     }
 
-    private fun closeProducer(producer: Producer?) {
-        producer?.let {
-            val producerId = producer.id
-            producer.close()
-            protoo.request("closeProducer", JsonUtils.toJsonObject("producerId", producerId),
-                object : ClientRequestHandler {
-                    override fun resolve(data: String?) {
-                        Logger.d(TAG, "postCloseProducer success $producerId")
-                    }
-
-                    override fun reject(error: Long, errorReason: String?) {
-                        Logger.d(TAG, "postCloseProducer fail $producerId, $errorReason")
-                    }
+    private fun closeProducer(producer: Producer) {
+        val producerId = producer.id
+        producer.close()
+        protoo.request("closeProducer", JsonUtils.toJsonObject("producerId", producerId),
+            object : ClientRequestHandler {
+                override fun resolve(data: String?) {
+                    Logger.d(TAG, "postCloseProducer success $producerId")
                 }
-            )
-        }
+
+                override fun reject(error: Long, errorReason: String?) {
+                    Logger.d(TAG, "postCloseProducer fail $producerId, $errorReason")
+                }
+            }
+        )
     }
 
     companion object {
