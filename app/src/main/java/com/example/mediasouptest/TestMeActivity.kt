@@ -51,6 +51,8 @@ class TestMeActivity : AppCompatActivity() {
         }
         mainViewModel.joinedLiveData.observe(this) {
             binding.btnJoin.isEnabled = false
+            binding.toggleMic.isEnabled = true
+            binding.toggleCamera.isEnabled = true
         }
         mainViewModel.onConsumerChange.observe(this) {
             it.forEach {

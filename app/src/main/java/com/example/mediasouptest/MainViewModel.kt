@@ -89,9 +89,10 @@ class MainViewModel : ViewModel() {
     }
 
     fun closeCamera() {
-        asyncTask {
+/*        asyncTask {
             roomClient?.closeCamera()
-        }
+        }*/
+        roomClient?.closeCamera()
     }
 
 
