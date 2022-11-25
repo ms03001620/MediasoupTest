@@ -43,23 +43,31 @@ class DeviceLogic(
         }
     }
 
-    fun createSelfTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        sendTransportLogic.createSelfTransport(localDeviceHelper, mContext, object : Producer.Listener {
+    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
+        if (device.canProduce("video").not()) {
+            throw UnsupportedOperationException("producer video")
+        }
+        return sendTransportLogic.createProducerVideo(localDeviceHelper, mContext, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
         }).also {
             selfProducerVideo = it
         }
+    }
 
-    fun createSelfAudioTransport(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        sendTransportLogic.createSelfAudioTransport(localDeviceHelper, mContext, object : Producer.Listener {
+    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
+        if (device.canProduce("audio").not()) {
+            throw UnsupportedOperationException("producer audio")
+        }
+        return sendTransportLogic.createProducerAudio(localDeviceHelper, mContext, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
         }).also {
             selfProducerAudio = it
         }
+    }
 
 
     fun createSendTransport(forceTcp: Boolean) =

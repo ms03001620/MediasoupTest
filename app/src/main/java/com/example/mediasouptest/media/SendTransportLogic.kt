@@ -51,24 +51,24 @@ class SendTransportLogic(
         return true
     }
 
-    fun createSelfTransport(
+    fun createProducerVideo(
         localDeviceHelper: LocalDeviceHelper,
         mContext: Context,
         autoCloseListener: Producer.Listener
     ): Producer {
-        localDeviceHelper.enableCamImpl(mContext)
         assert(mSendTransport != null)
+        localDeviceHelper.enableCamImpl(mContext)
         return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null)
     }
 
-    fun createSelfAudioTransport(
+    fun createProducerAudio(
         localDeviceHelper: LocalDeviceHelper,
         mContext: Context,
         autoCloseListener: Producer.Listener
-    ): Producer? {
-        localDeviceHelper.enableMicImpl(mContext)
+    ): Producer {
         assert(mSendTransport != null)
-        return mSendTransport?.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null)
+        localDeviceHelper.enableMicImpl(mContext)
+        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null)
     }
 
     private val listener = object : SendTransport.Listener {

@@ -135,10 +135,10 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     }
 
     fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        deviceLogic?.createSelfTransport(localDeviceHelper, mContext)
+        deviceLogic?.createProducerVideo(localDeviceHelper, mContext)
 
     fun showSelfAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context) =
-        deviceLogic?.createSelfAudioTransport(localDeviceHelper, mContext)
+        deviceLogic?.createProducerAudio(localDeviceHelper, mContext)
 
 
     companion object {
