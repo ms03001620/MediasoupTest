@@ -131,7 +131,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     }
 
     fun hideSelf() {
-        deviceLogic?.destroyVideo()
+        deviceLogic?.closeProducer()
     }
 
     fun showSelf(localDeviceHelper: LocalDeviceHelper, mContext: Context) =

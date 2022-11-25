@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
+import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Peer.ClientRequestHandler
@@ -13,6 +14,8 @@ class SendTransportLogic(
     private val workHandler: Handler
 ) {
     private var mSendTransport: SendTransport? = null
+    private var selfProducerVideo: Producer? = null
+    private var selfProducerAudio: Producer? = null
 
     fun createSendTransport(
         device: Device,
@@ -58,7 +61,9 @@ class SendTransportLogic(
     ): Producer {
         assert(mSendTransport != null)
         localDeviceHelper.enableCamImpl(mContext)
-        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null)
+        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null).also {
+            selfProducerVideo = it
+        }
     }
 
     fun createProducerAudio(
@@ -68,7 +73,9 @@ class SendTransportLogic(
     ): Producer {
         assert(mSendTransport != null)
         localDeviceHelper.enableMicImpl(mContext)
-        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null)
+        return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null).also {
+            selfProducerAudio = it
+        }
     }
 
     private val listener = object : SendTransport.Listener {
@@ -140,7 +147,32 @@ class SendTransportLogic(
     fun end() {
         //mSendTransport?.close()
         mSendTransport?.dispose()
-        mSendTransport = null
+    }
+
+    fun closeProducerVideo() {
+        closeProducer(selfProducerVideo)
+    }
+
+    fun closeProducerAudio() {
+        closeProducer(selfProducerAudio)
+    }
+
+    private fun closeProducer(producer: Producer?) {
+        producer?.let {
+            val producerId = producer.id
+            producer.close()
+            protoo.request("closeProducer", JsonUtils.toJsonObject("producerId", producerId),
+                object : ClientRequestHandler {
+                    override fun resolve(data: String?) {
+                        Logger.d(TAG, "postCloseProducer success $producerId")
+                    }
+
+                    override fun reject(error: Long, errorReason: String?) {
+                        Logger.d(TAG, "postCloseProducer fail $producerId, $errorReason")
+                    }
+                }
+            )
+        }
     }
 
     companion object {

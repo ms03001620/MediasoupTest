@@ -19,8 +19,6 @@ class DeviceLogic(
     private val device = Device()
     private val sendTransportLogic = SendTransportLogic(protoo, workHandler)
     private val recvTransportLogic = RecvTransportLogic(protoo, workHandler)
-    private var selfProducerVideo: Producer? = null
-    private var selfProducerAudio: Producer? = null
 
     private val rtpCapabilities: String
 
@@ -29,18 +27,9 @@ class DeviceLogic(
         rtpCapabilities = device.rtpCapabilities
     }
 
-    fun destroyVideo(): String? {
-        return selfProducerVideo?.let { producer ->
-            val id = producer.id
-            producer.close()
-            try {
-                val resp = protoo.syncRequest("closeProducer", JsonUtils.toJsonObject("producerId", id))
-                Logger.d(TAG, "destroyVideo $resp")
-            } catch (e: Exception) {
-                Logger.e(TAG, "destroyVideo", e)
-            }
-            id
-        }
+    fun closeProducer() {
+        sendTransportLogic.closeProducerVideo()
+        sendTransportLogic.closeProducerAudio()
     }
 
     fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
@@ -51,9 +40,7 @@ class DeviceLogic(
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
-        }).also {
-            selfProducerVideo = it
-        }
+        })
     }
 
     fun createProducerAudio(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
@@ -64,9 +51,7 @@ class DeviceLogic(
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
-        }).also {
-            selfProducerAudio = it
-        }
+        })
     }
 
 
