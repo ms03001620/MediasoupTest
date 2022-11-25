@@ -15,9 +15,8 @@ import org.mediasoup.droid.Producer
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.model.Peer
-import org.webrtc.VideoTrack
 
-class MainViewModel: ViewModel() {
+class MainViewModel : ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
     val joinedLiveData = MutableLiveData<Boolean>()
@@ -87,11 +86,11 @@ class MainViewModel: ViewModel() {
             roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
-            //roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
+            roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
         }
     }
 
-    fun hideSelf(){
+    fun hideSelf() {
         //localDeviceHelper?.dispose()
         //localDeviceHelper=null
         roomClient?.hideSelf()

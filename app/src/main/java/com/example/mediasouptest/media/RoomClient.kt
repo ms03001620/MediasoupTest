@@ -45,7 +45,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
                         val consuming = roomClientConfig.roomOptions.isConsume
                         val tcp = roomClientConfig.roomOptions.isForceTcp
 
-                        //if (producing) deviceLogic?.createSendTransport(tcp)
+                        if (producing) deviceLogic?.createSendTransport(tcp)
                         if (consuming) deviceLogic?.createRecvTransport(tcp)
 
                         callback.invoke()// simply to join() logic
