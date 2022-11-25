@@ -2,6 +2,7 @@ package org.mediasoup.droid.lib
 
 import android.content.Context
 import android.os.Looper
+import android.preference.PreferenceManager
 import org.mediasoup.droid.Logger
 import org.webrtc.AudioTrack
 import org.webrtc.CameraVideoCapturer.CameraSwitchHandler
@@ -15,6 +16,10 @@ class LocalDeviceHelper {
 
     init {
         peerConnectionUtils = PeerConnectionUtils()
+
+        //val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        //val camera = preferences.getString("camera", "front")
+        PeerConnectionUtils.setPreferCameraFace("front"/*camera*/)
     }
 
     fun start() {

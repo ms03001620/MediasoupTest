@@ -99,7 +99,6 @@ class TestMeActivity : AppCompatActivity() {
         }
         binding.toggleCamera.setOnCheckedChangeListener { compoundButton, on ->
             if (on) {
-                initCamera()
                 mainViewModel.openCamera(applicationContext)
             } else {
                 mainViewModel.closeCamera()
@@ -109,8 +108,4 @@ class TestMeActivity : AppCompatActivity() {
         binding.toggleMic.setOnCheckedChangeListener { compoundButton, on ->
         }
     }
-
-    fun getAct() = this
-
-
 }
