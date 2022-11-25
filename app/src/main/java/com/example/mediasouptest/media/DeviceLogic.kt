@@ -32,11 +32,20 @@ class DeviceLogic(
         sendTransportLogic.closeProducerAudio()
     }
 
+    fun closeProducerAudio() {
+        sendTransportLogic.closeProducerAudio()
+    }
+
+    fun closeProducerVideo() {
+        sendTransportLogic.closeProducerVideo()
+    }
+
     fun createProducerVideo(localDeviceHelper: LocalDeviceHelper, mContext: Context): Producer {
         if (device.canProduce("video").not()) {
             throw UnsupportedOperationException("producer video")
         }
-        return sendTransportLogic.createProducerVideo(localDeviceHelper, mContext, object : Producer.Listener {
+        localDeviceHelper.enableCamImpl(mContext)
+        return sendTransportLogic.createProducerVideo(localDeviceHelper, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
@@ -47,7 +56,8 @@ class DeviceLogic(
         if (device.canProduce("audio").not()) {
             throw UnsupportedOperationException("producer audio")
         }
-        return sendTransportLogic.createProducerAudio(localDeviceHelper, mContext, object : Producer.Listener {
+        localDeviceHelper.enableMicImpl(mContext)
+        return sendTransportLogic.createProducerAudio(localDeviceHelper, object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }

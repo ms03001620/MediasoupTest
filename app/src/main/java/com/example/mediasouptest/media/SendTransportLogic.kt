@@ -56,11 +56,9 @@ class SendTransportLogic(
 
     fun createProducerVideo(
         localDeviceHelper: LocalDeviceHelper,
-        mContext: Context,
         autoCloseListener: Producer.Listener
     ): Producer {
         assert(mSendTransport != null)
-        localDeviceHelper.enableCamImpl(mContext)
         return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getVideoTrack(), null, null, null).also {
             selfProducerVideo = it
         }
@@ -68,11 +66,9 @@ class SendTransportLogic(
 
     fun createProducerAudio(
         localDeviceHelper: LocalDeviceHelper,
-        mContext: Context,
         autoCloseListener: Producer.Listener
     ): Producer {
         assert(mSendTransport != null)
-        localDeviceHelper.enableMicImpl(mContext)
         return mSendTransport!!.produce(autoCloseListener, localDeviceHelper.getAudioTrack(), null, null, null).also {
             selfProducerAudio = it
         }

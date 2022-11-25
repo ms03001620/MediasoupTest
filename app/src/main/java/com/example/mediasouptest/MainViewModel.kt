@@ -78,23 +78,31 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun showSelf(applicationContext: Context) {
-        if (localDeviceHelper == null) {
-            localDeviceHelper = LocalDeviceHelper()
-        }
+    fun openCamera(applicationContext: Context) {
+        initLocalDeviceHelper()
         asyncTask {
-            roomClient?.showSelf(localDeviceHelper!!, applicationContext)?.let {
+            roomClient?.openCamera(localDeviceHelper!!, applicationContext)?.let {
                 onProductSelf.postValue(it)
             }
-            roomClient?.showSelfAudio(localDeviceHelper!!, applicationContext)
+            //roomClient?.openMic(localDeviceHelper!!, applicationContext)
         }
     }
 
-    fun hideSelf() {
-        //localDeviceHelper?.dispose()
-        //localDeviceHelper=null
-        roomClient?.hideSelf()
+    fun closeCamera() {
+        asyncTask {
+            roomClient?.closeCamera()
+        }
     }
+
+
+
+
+    fun initLocalDeviceHelper(){
+        if (localDeviceHelper == null) {
+            localDeviceHelper = LocalDeviceHelper()
+        }
+    }
+
 
 
 }

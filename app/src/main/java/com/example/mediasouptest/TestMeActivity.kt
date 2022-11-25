@@ -95,12 +95,16 @@ class TestMeActivity : AppCompatActivity() {
         binding.btnJoin.setOnClickListener {
             mainViewModel.join()
         }
-        binding.btnCam.setOnClickListener {
-            initCamera()
-            mainViewModel.showSelf(getAct())
+        binding.toggleCamera.setOnCheckedChangeListener { compoundButton, on ->
+            if (on) {
+                initCamera()
+                mainViewModel.openCamera(applicationContext)
+            } else {
+                mainViewModel.closeCamera()
+            }
         }
-        binding.btnCamClose.setOnClickListener {
-            mainViewModel.hideSelf()
+
+        binding.toggleMic.setOnCheckedChangeListener { compoundButton, on ->
         }
     }
 
