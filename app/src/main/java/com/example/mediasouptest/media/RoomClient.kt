@@ -127,6 +127,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
         printThread()
         deviceLogic?.end()
         deviceLogic = null
+        roomMessageHandler?.release()
         roomMessageHandler = null
         mProtoo?.close()
         mProtoo = null

@@ -11,7 +11,7 @@ import org.protoojs.droid.Message
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
+class RoomMessageHandler(var callback: OnRoomClientEvent? = null) : Consumer.Listener {
     private val mConsumers  = ConcurrentHashMap<String, ConsumerHolder>()
     private val mPeers = CopyOnWriteArrayList<Peer>()
 
@@ -32,7 +32,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
     private fun addPeers(peer: List<Peer>) {
         Logger.d(TAG, "add Peers: ${peer}")
         mPeers.addAll(peer)
-        callback.onPeersChange(mPeers.toList())
+        callback?.onPeersChange(mPeers.toList())
     }
 
     private fun removePeer(peerId: String) {
@@ -40,7 +40,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
             it.id == peerId
         }?.let {
             mPeers.remove(it)
-            callback.onPeersChange(mPeers.toList())
+            callback?.onPeersChange(mPeers.toList())
         }
     }
 
@@ -48,7 +48,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
         assert(consumer.isClosed)
         mConsumers.remove(consumer.id)?.let {
             Logger.d(TAG, "removeClose:${it.peerId}")
-            callback.onConsumersChange(geConsumers())
+            callback?.onConsumersChange(geConsumers())
         }
     }
 
@@ -56,7 +56,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
         mConsumers.remove(consumerId)?.let {
             try {
                 it.consumer.close()
-                callback.onConsumersChange(geConsumers())
+                callback?.onConsumersChange(geConsumers())
             } catch (e: Exception) {
                 Logger.e(TAG, "removeConsumerAndClose", e)
             }
@@ -66,7 +66,7 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
     fun add(consumerHolder: ConsumerHolder) {
         Logger.d(TAG, "addConsumer: ${consumerHolder.println()}")
         mConsumers[consumerHolder.consumer.id] = consumerHolder
-        callback.onConsumersChange(geConsumers())
+        callback?.onConsumersChange(geConsumers())
     }
 
     fun geConsumers() = mConsumers.map { it.value }
@@ -162,5 +162,9 @@ class RoomMessageHandler(val callback: OnRoomClientEvent): Consumer.Listener {
         Logger.d(TAG, "onTransportClose:${consumer.id}")
         assert(false)// TODO Consumer close by native
         removeClose(consumer)
+    }
+
+    fun release() {
+        callback = null
     }
 }

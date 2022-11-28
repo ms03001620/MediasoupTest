@@ -57,6 +57,8 @@ class MainViewModel : ViewModel() {
         // 主线程调用需要直接关闭
         roomClient?.end()
         roomClient = null
+        localDeviceHelper?.dispose()
+        localDeviceHelper = null
     }
 
     fun join() {
