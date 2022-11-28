@@ -56,32 +56,36 @@ class SendTransportLogic(
 
     fun createProducerVideo(
         localDeviceHelper: LocalDeviceHelper,
-    ): Producer {
+    ): Boolean {
         assert(mSendTransport != null)
+        if (selfProducerVideo != null) {
+            return false
+        }
         this.localDeviceHelper = localDeviceHelper
         this.localDeviceHelper?.enableCamImpl()
-        return mSendTransport!!.produce(object : Producer.Listener {
+        selfProducerVideo = mSendTransport!!.produce(object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
             }
-        }, localDeviceHelper.getVideoTrack(), null, null, null).also {
-            selfProducerVideo = it
-        }
+        }, localDeviceHelper.getVideoTrack(), null, null, null)
+        return true
     }
 
     fun createProducerAudio(
         localDeviceHelper: LocalDeviceHelper,
-    ): Producer {
+    ): Boolean {
         assert(mSendTransport != null)
+        if (selfProducerAudio != null) {
+            return false
+        }
         this.localDeviceHelper = localDeviceHelper
         this.localDeviceHelper?.enableMicImpl()
-        return mSendTransport!!.produce(object : Producer.Listener {
+        selfProducerAudio = mSendTransport!!.produce(object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false, { Logger.e(TAG, "a onTransportClose${producer?.id}") })
             }
-        }, localDeviceHelper.localAudioTrack, null, null, null).also {
-            selfProducerAudio = it
-        }
+        }, localDeviceHelper.localAudioTrack, null, null, null)
+        return true
     }
 
     private val listener = object : SendTransport.Listener {

@@ -82,7 +82,6 @@ class MainViewModel : ViewModel() {
 
     fun openCamera() {
         roomClient?.openCamera(localDeviceHelper!!)?.let {
-            onProductSelf.postValue(it)
         }
     }
 

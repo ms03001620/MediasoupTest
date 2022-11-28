@@ -31,14 +31,14 @@ class DeviceLogic(
         sendTransportLogic.closeProducerVideo()
     }
 
-    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper): Producer {
+    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper): Boolean {
         if (device.canProduce("video").not()) {
             throw UnsupportedOperationException("producer video")
         }
         return sendTransportLogic.createProducerVideo(localDeviceHelper)
     }
 
-    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper): Producer {
+    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper): Boolean {
         if (device.canProduce("audio").not()) {
             throw UnsupportedOperationException("producer audio")
         }
