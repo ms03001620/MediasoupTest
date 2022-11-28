@@ -1,12 +1,12 @@
 package com.example.mediasouptest.media
 
-import android.content.Context
 import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Peer.ClientRequestHandler
+import java.util.concurrent.CountDownLatch
 
 class SendTransportLogic(
     private val protoo: Protoo,
@@ -109,21 +109,33 @@ class SendTransportLogic(
             rtpParameters: String?,
             appData: String?
         ): String {
-            Logger.d(TAG, "onProduce ${transport.id}")
-            val req = JSONObject()
-            req.put("transportId", transport.id)
-            req.put("kind", kind)
-            req.put("rtpParameters", JSONObject(rtpParameters))
-            req.put("appData", appData)
-
+            var id = ""
+            val lock = CountDownLatch(1)
             try {
-                val response = protoo.syncRequest("produce", req)
-                val id = JSONObject(response).optString("id")
-                return id
+                Logger.d(TAG, "onProduce ${transport.id}")
+                val req = JSONObject()
+                req.put("transportId", transport.id)
+                req.put("kind", kind)
+                req.put("rtpParameters", JSONObject(rtpParameters))
+                req.put("appData", appData)
+                protoo.request("produce", req, object : ClientRequestHandler {
+                    override fun resolve(data: String?) {
+                        id = JSONObject(data ?: "").optString("id")
+                        lock.countDown()
+                    }
+
+                    override fun reject(error: Long, errorReason: String?) {
+                        lock.countDown()
+                    }
+                })
             } catch (e: Exception) {
+                lock.countDown()
                 Logger.e(TAG, "onProduce ${transport.id}", e)
             }
-            return ""
+            lock.await()
+            assert(id.isNotEmpty())
+            Logger.d(TAG, "onProduce await $id")
+            return id
         }
 
         override fun onConnectionStateChange(
@@ -162,30 +174,34 @@ class SendTransportLogic(
     }
 
     fun closeProducerVideo() {
-        localDeviceHelper?.disposeVideo()
         selfProducerVideo?.let {
-            closeProducer(it)
+            closeProducer(it) {
+                localDeviceHelper?.disposeVideo()
+                selfProducerVideo?.close()
+            }
         }
     }
 
     fun closeProducerAudio() {
-        localDeviceHelper?.disposeAudio()
         selfProducerAudio?.let {
-            closeProducer(it)
+            closeProducer(it) {
+                localDeviceHelper?.disposeAudio()
+                selfProducerAudio?.close()
+            }
         }
     }
 
-    private fun closeProducer(producer: Producer) {
+    private fun closeProducer(producer: Producer, callback:()->Unit) {
         val producerId = producer.id
-        producer.close()
         protoo.request("closeProducer", JsonUtils.toJsonObject("producerId", producerId),
             object : ClientRequestHandler {
                 override fun resolve(data: String?) {
                     Logger.d(TAG, "postCloseProducer success $producerId")
+                    callback.invoke()
                 }
 
                 override fun reject(error: Long, errorReason: String?) {
-                    Logger.d(TAG, "postCloseProducer fail $producerId, $errorReason")
+                    Logger.w(TAG, "postCloseProducer fail $producerId, $errorReason")
                 }
             }
         )
