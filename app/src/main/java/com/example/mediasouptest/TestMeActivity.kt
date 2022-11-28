@@ -50,15 +50,20 @@ class TestMeActivity : AppCompatActivity() {
             showOne(it)
         }
         mainViewModel.joinedLiveData.observe(this) {
-            binding.btnJoin.isEnabled = false
-            binding.toggleMic.isEnabled = true
-            binding.toggleCamera.isEnabled = true
+            activeBtns(it)
         }
         mainViewModel.onConsumerChange.observe(this) {
             it.forEach {
                 printLogs("\n"+it.println())
             }
         }
+    }
+
+    private fun activeBtns(active: Boolean){
+        binding.btnJoin.isEnabled = !active
+        binding.toggleMic.isEnabled = active
+        binding.toggleCamera.isEnabled = active
+        binding.toggleTest.isEnabled = active
     }
 
     private fun printLogs(newLog: String){
@@ -92,6 +97,7 @@ class TestMeActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
+            activeBtns(false)
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
