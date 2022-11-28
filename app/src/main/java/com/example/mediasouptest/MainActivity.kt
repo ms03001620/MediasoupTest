@@ -57,12 +57,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun initCamera() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val camera = preferences.getString("camera", "front")
-        PeerConnectionUtils.setPreferCameraFace(camera)
-    }
-
     private fun initEvent() {
         binding.btnTestSurfaceViewRenderer.setOnClickListener {
             startActivity(Intent(this, TestSurfaceViewRenderer::class.java))
@@ -78,10 +72,11 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
-            mainViewModel.join()
+
         }
         binding.btnFn.setOnClickListener {
             mainViewModel.openCamera()
+            mainViewModel.openMic()
         }
     }
 }
