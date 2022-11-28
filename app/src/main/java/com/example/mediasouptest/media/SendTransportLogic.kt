@@ -5,7 +5,6 @@ import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
-import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Peer.ClientRequestHandler
 
@@ -56,12 +55,11 @@ class SendTransportLogic(
     }
 
     fun createProducerVideo(
-        context: Context,
         localDeviceHelper: LocalDeviceHelper,
     ): Producer {
         assert(mSendTransport != null)
         this.localDeviceHelper = localDeviceHelper
-        this.localDeviceHelper?.enableCamImpl(context)
+        this.localDeviceHelper?.enableCamImpl()
         return mSendTransport!!.produce(object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false)
@@ -72,12 +70,11 @@ class SendTransportLogic(
     }
 
     fun createProducerAudio(
-        context: Context,
         localDeviceHelper: LocalDeviceHelper,
     ): Producer {
         assert(mSendTransport != null)
         this.localDeviceHelper = localDeviceHelper
-        this.localDeviceHelper?.enableMicImpl(context)
+        this.localDeviceHelper?.enableMicImpl()
         return mSendTransport!!.produce(object : Producer.Listener {
             override fun onTransportClose(producer: Producer?) {
                 assert(false, { Logger.e(TAG, "a onTransportClose${producer?.id}") })

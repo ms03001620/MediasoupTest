@@ -63,7 +63,6 @@ class TestMeActivity : AppCompatActivity() {
         binding.btnJoin.isEnabled = !active
         binding.toggleMic.isEnabled = active
         binding.toggleCamera.isEnabled = active
-        binding.toggleTest.isEnabled = active
     }
 
     private fun printLogs(newLog: String){
@@ -94,6 +93,7 @@ class TestMeActivity : AppCompatActivity() {
 
     private fun initEvent() {
         binding.btnStart.setOnClickListener {
+            mainViewModel.initLocalDeviceHelper(applicationContext)
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
@@ -105,7 +105,7 @@ class TestMeActivity : AppCompatActivity() {
         }
         binding.toggleCamera.setOnCheckedChangeListener { compoundButton, on ->
             if (on) {
-                mainViewModel.openCamera(applicationContext)
+                mainViewModel.openCamera()
             } else {
                 mainViewModel.closeCamera()
             }
@@ -113,13 +113,13 @@ class TestMeActivity : AppCompatActivity() {
 
         binding.toggleMic.setOnCheckedChangeListener { compoundButton, on ->
             if (on) {
-                mainViewModel.openMic(applicationContext)
+                mainViewModel.openMic()
             } else {
                 mainViewModel.closeMic()
             }
         }
         binding.toggleTest.setOnCheckedChangeListener { compoundButton, on ->
-            mainViewModel.test(on)
+            mainViewModel.test(applicationContext)
         }
     }
 }

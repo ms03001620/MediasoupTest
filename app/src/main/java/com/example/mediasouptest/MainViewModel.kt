@@ -7,13 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.ConsumerHolder
+import com.example.mediasouptest.media.LocalDeviceHelper
 import com.example.mediasouptest.media.OnRoomClientEvent
 import com.example.mediasouptest.media.RoomClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.Producer
 import org.mediasoup.droid.demo.RoomClientConfig
-import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.model.Peer
 
 class MainViewModel : ViewModel() {
@@ -50,7 +50,7 @@ class MainViewModel : ViewModel() {
         roomClient = RoomClient(mWorkHandler!!, {
             join()
         })
-        roomClient?.init(roomClientConfig)
+        roomClient?.init(roomClientConfig, localDeviceHelper?.createPeerConnectionOptions())
     }
 
     fun close() {
@@ -78,16 +78,14 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun openCamera(applicationContext: Context) {
-        initLocalDeviceHelper()
-        roomClient?.openCamera(localDeviceHelper!!, applicationContext)?.let {
+    fun openCamera() {
+        roomClient?.openCamera(localDeviceHelper!!)?.let {
             onProductSelf.postValue(it)
         }
     }
 
-    fun openMic(applicationContext: Context) {
-        initLocalDeviceHelper()
-        roomClient?.openMic(localDeviceHelper!!, applicationContext)?.let {
+    fun openMic() {
+        roomClient?.openMic(localDeviceHelper!!)?.let {
         }
     }
 
@@ -99,16 +97,16 @@ class MainViewModel : ViewModel() {
         roomClient?.closeCamera()
     }
 
-
-    fun test(b: Boolean){
-        //localDeviceHelper?.dispose()
-        roomClient?.testCall()
+    fun test(c: Context){
+        initLocalDeviceHelper(c)
+        localDeviceHelper?.enableMicImpl()
+        localDeviceHelper?.enableCamImpl()
     }
 
 
-    fun initLocalDeviceHelper(){
+    fun initLocalDeviceHelper(context: Context) {
         if (localDeviceHelper == null) {
-            localDeviceHelper = LocalDeviceHelper()
+            localDeviceHelper = LocalDeviceHelper(context)
         }
     }
 

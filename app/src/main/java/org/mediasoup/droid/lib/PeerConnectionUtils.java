@@ -70,6 +70,11 @@ public class PeerConnectionUtils {
                 .createPeerConnectionFactory();
     }
 
+    public PeerConnectionFactory getPeerConnectionFactory(Context context) {
+        createPeerConnectionFactory(context);
+        return mPeerConnectionFactory;
+    }
+
     private AudioDeviceModule createJavaAudioDevice(Context appContext) {
         Logger.d(TAG, "createJavaAudioDevice()");
         // Enable/disable OpenSL ES playback.

@@ -1,20 +1,15 @@
 package com.example.mediasouptest.media
 
-import android.content.Context
 import android.os.Handler
-import org.mediasoup.droid.Consumer
-import org.mediasoup.droid.Device
-import org.mediasoup.droid.Logger
-import org.mediasoup.droid.Producer
-import org.mediasoup.droid.lib.JsonUtils
-import org.mediasoup.droid.lib.LocalDeviceHelper
+import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Message
 
 class DeviceLogic(
     private val routerRtpCapabilities: String,
     private val protoo: Protoo,
-    private val workHandler: Handler
+    private val workHandler: Handler,
+    private val options: PeerConnection.Options? = null
 ) {
     private val device = Device()
     private val sendTransportLogic = SendTransportLogic(protoo, workHandler)
@@ -23,7 +18,8 @@ class DeviceLogic(
     private val rtpCapabilities: String
 
     init {
-        device.load(routerRtpCapabilities, null)
+        assert(options != null) // https://github.com/haiyangwu/mediasoup-client-android/pull/42
+        device.load(routerRtpCapabilities, options)
         rtpCapabilities = device.rtpCapabilities
     }
 
@@ -35,18 +31,18 @@ class DeviceLogic(
         sendTransportLogic.closeProducerVideo()
     }
 
-    fun createProducerVideo(context: Context, localDeviceHelper: LocalDeviceHelper): Producer {
+    fun createProducerVideo(localDeviceHelper: LocalDeviceHelper): Producer {
         if (device.canProduce("video").not()) {
             throw UnsupportedOperationException("producer video")
         }
-        return sendTransportLogic.createProducerVideo(context, localDeviceHelper)
+        return sendTransportLogic.createProducerVideo(localDeviceHelper)
     }
 
-    fun createProducerAudio(context: Context, localDeviceHelper: LocalDeviceHelper): Producer {
+    fun createProducerAudio(localDeviceHelper: LocalDeviceHelper): Producer {
         if (device.canProduce("audio").not()) {
             throw UnsupportedOperationException("producer audio")
         }
-        return sendTransportLogic.createProducerAudio(context, localDeviceHelper)
+        return sendTransportLogic.createProducerAudio(localDeviceHelper)
     }
 
     fun createSendTransport(forceTcp: Boolean) =

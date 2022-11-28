@@ -4,9 +4,9 @@ import android.content.Context
 import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.Logger
+import org.mediasoup.droid.PeerConnection
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.JsonUtils.toJsonObject
-import org.mediasoup.droid.lib.LocalDeviceHelper
 import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.UrlFactory
 import org.mediasoup.droid.lib.socket.WebSocketTransport
@@ -19,9 +19,11 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
     private var roomMessageHandler: RoomMessageHandler? = null
+    private var options: PeerConnection.Options? = null
 
-    fun init(roomClientConfig: RoomClientConfig) {
+    fun init(roomClientConfig: RoomClientConfig, options: PeerConnection.Options?) {
         this.roomClientConfig = roomClientConfig
+        this.options = options
         val transport = WebSocketTransport(
             UrlFactory.getProtooUrl(
                 /*roomClientConfig.data.roomId*/"c5bwfyow",
@@ -39,7 +41,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
             mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
                 object : ClientRequestHandler {
                     override fun resolve(routerRtpCapabilities: String?) {
-                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler)
+                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler, options)
 
                         val producing = roomClientConfig.roomOptions.isProduce
                         val consuming = roomClientConfig.roomOptions.isConsume
@@ -130,11 +132,11 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
         mProtoo = null
     }
 
-    fun openCamera(localDeviceHelper: LocalDeviceHelper, context: Context) =
-        deviceLogic?.createProducerVideo(context, localDeviceHelper)
+    fun openCamera(localDeviceHelper: LocalDeviceHelper) =
+        deviceLogic?.createProducerVideo(localDeviceHelper)
 
-    fun openMic(localDeviceHelper: LocalDeviceHelper, context: Context) =
-        deviceLogic?.createProducerAudio(context, localDeviceHelper)
+    fun openMic(localDeviceHelper: LocalDeviceHelper) =
+        deviceLogic?.createProducerAudio(localDeviceHelper)
 
 
     fun closeCamera() = deviceLogic?.closeProducerVideo()
