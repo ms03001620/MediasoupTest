@@ -85,6 +85,16 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun openMic(applicationContext: Context) {
+        initLocalDeviceHelper()
+        roomClient?.openMic(localDeviceHelper!!, applicationContext)?.let {
+        }
+    }
+
+    fun closeMic() {
+        roomClient?.closeMic()
+    }
+
     fun closeCamera() {
         roomClient?.closeCamera()
     }

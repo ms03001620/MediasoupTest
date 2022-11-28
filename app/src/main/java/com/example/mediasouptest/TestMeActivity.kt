@@ -106,6 +106,13 @@ class TestMeActivity : AppCompatActivity() {
         }
 
         binding.toggleMic.setOnCheckedChangeListener { compoundButton, on ->
+            if (on) {
+                mainViewModel.openMic(applicationContext)
+            } else {
+                mainViewModel.closeMic()
+            }
+        }
+        binding.toggleTest.setOnCheckedChangeListener { compoundButton, on ->
             mainViewModel.test(on)
         }
     }

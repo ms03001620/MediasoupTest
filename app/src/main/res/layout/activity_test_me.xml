@@ -62,7 +62,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="5dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -72,6 +72,24 @@
 
                 <android.widget.ToggleButton
                     android:id="@+id/toggleMic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="t" />
+
+                <android.widget.ToggleButton
+                    android:id="@+id/toggleTest"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:enabled="false" />
