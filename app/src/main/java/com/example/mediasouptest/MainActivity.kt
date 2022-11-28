@@ -19,7 +19,6 @@ class MainActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainBinding
     lateinit var adapter: PeerAdapter
-    private var localDeviceHelper: LocalDeviceHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +71,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, TestMeActivity::class.java))
         }
         binding.btnStart.setOnClickListener {
+            mainViewModel.initLocalDeviceHelper(applicationContext)
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
@@ -81,8 +81,7 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-            initCamera()
-            mainViewModel.openCamera(applicationContext)
+            mainViewModel.openCamera()
         }
     }
 }
