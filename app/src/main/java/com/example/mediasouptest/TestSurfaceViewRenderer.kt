@@ -56,6 +56,7 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
 
     private fun initEvent() {
         binding.btnStart.setOnClickListener {
+            mainViewModel.initLocalDeviceHelper(applicationContext)
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
@@ -65,8 +66,8 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
             mainViewModel.join()
         }
         binding.btnFn.setOnClickListener {
-            val r  = findViewById<VideoWallpaper>(R.id.renderer)
-            r.hideVideo()
+            mainViewModel.openCamera()
+            mainViewModel.openMic()
         }
     }
 

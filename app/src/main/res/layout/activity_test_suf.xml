@@ -42,22 +42,15 @@
 
         </LinearLayout>
 
-        <ScrollView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp">
+            android:layout_height="wrap_content">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <com.example.mediasouptest.widget.VideoWallpaper
-                    android:id="@+id/renderer"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp" />
-            </FrameLayout>
-
-
-        </ScrollView>
+            <com.example.mediasouptest.widget.VideoWallpaper
+                android:id="@+id/renderer"
+                android:layout_width="200dp"
+                android:layout_height="200dp" />
+        </FrameLayout>
 
 
     </LinearLayout>
