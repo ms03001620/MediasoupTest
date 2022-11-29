@@ -182,6 +182,7 @@ class SendTransportLogic(
             closeProducer(it) {
                 localDeviceHelper?.disposeVideo()
                 selfProducerVideo?.close()
+                selfProducerVideo = null
             }
         }
     }
@@ -191,6 +192,7 @@ class SendTransportLogic(
             closeProducer(it) {
                 localDeviceHelper?.disposeAudio()
                 selfProducerAudio?.close()
+                selfProducerAudio = null
             }
         }
     }
