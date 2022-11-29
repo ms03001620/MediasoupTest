@@ -20,6 +20,8 @@ class TestMeActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityTestMeBinding
 
+    val handlerUtils = WorkHandlerUtils()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initView()
@@ -119,7 +121,10 @@ class TestMeActivity : AppCompatActivity() {
             }
         }
         binding.toggleTest.setOnCheckedChangeListener { compoundButton, on ->
-            mainViewModel.test(applicationContext)
+            handlerUtils.loop(300, {
+                binding.toggleCamera.performClick()
+                binding.toggleMic.performClick()
+            })
         }
     }
 }
