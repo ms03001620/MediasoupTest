@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.mediasouptest.databinding.ActivityTestSufBinding
-import com.example.mediasouptest.media.ConsumerHolder
 import org.mediasoup.droid.lib.PeerConnectionUtils
 import org.webrtc.VideoTrack
 
@@ -32,31 +31,32 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
     private fun initView() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_test_suf)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        binding.videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
-        binding.videoRenderer.setEnableHardwareScaler(true /* enabled */)
+        //binding.videoRenderer.setEnableHardwareScaler(true /* enabled */)
     }
 
     private fun initObserver() {
         mainViewModel.peersLiveData.observe(this) {
         }
-        mainViewModel.onConsumerChange.observe(this){
-            showOne(it.filter { it.consumer.track is VideoTrack })
+        mainViewModel.onConsumerChange.observe(this) {
+            it.forEach {
+                val track = it.consumer.track
+                if (track is VideoTrack) {
+                    if (currentTrack == null) {
+                        Log.d("_____", "this${track.id()}")
+                        currentTrack = track
+                        showRenderer()
+                    }
+                }
+            }
         }
     }
 
     var currentTrack: VideoTrack? = null
 
-    private fun showOne(consumerHolders: List<ConsumerHolder>) {
-        consumerHolders.firstOrNull()?.let {
-            with(it.consumer.track as VideoTrack){
-                currentTrack = this
-                this.addSink(binding.videoRenderer)
-            }
-        }
-    }
-
     override fun onDestroy() {
-        mainViewModel.close()
+        if (currentTrack != null) {
+            releaseRenderer(true)
+        }
         super.onDestroy()
     }
 
@@ -66,18 +66,33 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
+            releaseRenderer(true)// can not add again
             mainViewModel.close()
         }
         binding.btnAdd.setOnClickListener {
-            //re add need init
-            binding.videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
-            currentTrack?.addSink(binding.videoRenderer)
+            showRenderer()
         }
         binding.btnRemove.setOnClickListener {
-            currentTrack?.removeSink(binding.videoRenderer)
-            binding.videoRenderer.release()
+            releaseRenderer(false)//can add again
         }
     }
 
+    private fun showRenderer() {
+        assert(currentTrack != null)
+
+        binding.videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
+        currentTrack?.addSink(binding.videoRenderer)
+    }
+
+    private fun releaseRenderer(force: Boolean) {
+        assert(currentTrack != null)
+
+        currentTrack?.removeSink(binding.videoRenderer)
+        binding.videoRenderer.release()
+
+        if (force) {
+            currentTrack = null
+        }
+    }
 
 }
