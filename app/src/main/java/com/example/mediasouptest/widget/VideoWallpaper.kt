@@ -31,7 +31,6 @@ class VideoWallpaper(context: Context, attrs: AttributeSet) : FrameLayout(contex
 
     fun showVideo(track: MediaStreamTrack) {
         with(track as VideoTrack) {
-           // renderer.init(PeerConnectionUtils.getEglContext(), null)
             videoTrack = track
             track.addSink(renderer)
             mask.visibility = View.GONE

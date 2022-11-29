@@ -8,7 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.mediasouptest.databinding.ActivityTestSufBinding
 import com.example.mediasouptest.media.ConsumerHolder
-import com.example.mediasouptest.widget.VideoWallpaper
+import org.mediasoup.droid.lib.PeerConnectionUtils
 import org.webrtc.VideoTrack
 
 class TestSurfaceViewRenderer : AppCompatActivity() {
@@ -32,6 +32,8 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
     private fun initView() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_test_suf)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        binding.videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
+        binding.videoRenderer.setEnableHardwareScaler(true /* enabled */)
     }
 
     private fun initObserver() {
@@ -42,10 +44,14 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
         }
     }
 
+    var currentTrack: VideoTrack? = null
+
     private fun showOne(consumerHolders: List<ConsumerHolder>) {
-        Log.d("----", "----")
         consumerHolders.firstOrNull()?.let {
-            findViewById<VideoWallpaper>(R.id.renderer).showVideo((it.consumer.track as VideoTrack))
+            with(it.consumer.track as VideoTrack){
+                currentTrack = this
+                this.addSink(binding.videoRenderer)
+            }
         }
     }
 
@@ -62,12 +68,14 @@ class TestSurfaceViewRenderer : AppCompatActivity() {
         binding.btnEnd.setOnClickListener {
             mainViewModel.close()
         }
-        binding.btnJoin.setOnClickListener {
-            mainViewModel.join()
+        binding.btnAdd.setOnClickListener {
+            //re add need init
+            binding.videoRenderer.init(PeerConnectionUtils.getEglContext(), null)
+            currentTrack?.addSink(binding.videoRenderer)
         }
-        binding.btnFn.setOnClickListener {
-            mainViewModel.openCamera()
-            mainViewModel.openMic()
+        binding.btnRemove.setOnClickListener {
+            currentTrack?.removeSink(binding.videoRenderer)
+            binding.videoRenderer.release()
         }
     }
 
