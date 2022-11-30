@@ -17,4 +17,10 @@
         android:layout_height="wrap_content"
         android:text="123" />
 
+    <com.example.mediasouptest.widget.TestWallpaper
+        android:id="@+id/testWallpaper"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="#0f0" />
+
 </LinearLayout>
