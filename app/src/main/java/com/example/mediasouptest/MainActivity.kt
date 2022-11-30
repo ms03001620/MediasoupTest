@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
+            adapter.removeAll()
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {

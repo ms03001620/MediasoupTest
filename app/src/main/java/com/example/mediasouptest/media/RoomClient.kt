@@ -61,6 +61,7 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
 
         override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
             try {
+                Logger.d(TAG, "onRequest${request.method}")
                 when (request.method) {
                     "newConsumer" -> {
                         deviceLogic?.onNewConsumer(request, roomMessageHandler)?.let {

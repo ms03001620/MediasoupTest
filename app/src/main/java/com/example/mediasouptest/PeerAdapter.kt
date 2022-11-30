@@ -9,30 +9,30 @@ import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.widget.VideoWallpaper
 import org.mediasoup.droid.lib.model.Peer
 
+data class PeerInfo(val peer: Peer, var consumerHolder: ConsumerHolder?)
+
 class PeerAdapter(private val onClick: (Peer) -> Unit) :
+
+
     RecyclerView.Adapter<PeerAdapter.PlateViewHolder>() {
-    private var data = mutableListOf<Peer>()
-    private var consumerList = mutableListOf<ConsumerHolder>()
+    private var data = mutableListOf<PeerInfo>()
 
     class PlateViewHolder(itemView: View, val onClick: (Peer) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
         private val textName: TextView = itemView.findViewById(R.id.text_name)
         private val videoWallpaper: VideoWallpaper = itemView.findViewById(R.id.video_wallpaper)
 
-        fun bind(plate: Peer, consumerList: MutableList<ConsumerHolder>) {
-            textName.text = plate.displayName + "," + plate.id
-            render(videoWallpaper, plate, consumerList)
+        fun bind(plate: PeerInfo) {
+            textName.text = plate.peer.displayName + "," + plate.peer.id
+            render(videoWallpaper, plate)
         }
 
-        private fun render(videoWallpaper: VideoWallpaper, peer: Peer, consumerList: MutableList<ConsumerHolder>) {
-            consumerList.firstOrNull {
-                it.peerId == peer.id
-            }.let {
-                if (it == null) {
-                    videoWallpaper.hideVideo()
-                } else {
-                    videoWallpaper.showVideo(it.consumer.track)
-                }
+        private fun render(videoWallpaper: VideoWallpaper, peer: PeerInfo) {
+            val consumerHolder = peer.consumerHolder
+            if (consumerHolder == null) {
+                videoWallpaper.hideVideo()
+            } else {
+                videoWallpaper.showVideo(consumerHolder.consumer.track)
             }
         }
     }
@@ -44,7 +44,7 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
     }
 
     override fun onBindViewHolder(holder: PlateViewHolder, position: Int) {
-        holder.bind(data.get(position), consumerList)
+        holder.bind(data.get(position))
     }
 
     override fun getItemCount(): Int {
@@ -52,18 +52,24 @@ class PeerAdapter(private val onClick: (Peer) -> Unit) :
     }
 
     fun onVideoConsumer(consumers: List<ConsumerHolder>) {
-        consumerList.clear()
-        consumerList.addAll(consumers)
+        for (info in data) {
+            val id = info.peer.id
+            val c = consumers.firstOrNull { it.peerId == id }
+            info.consumerHolder = c
+        }
         notifyDataSetChanged()
     }
 
     fun setPeers(peers: List<Peer>) {
         data.clear()
-        data.addAll(ArrayList(peers))
+        data.addAll(peers.map {
+            PeerInfo(it, null)
+        })
         notifyDataSetChanged()
     }
 
-    fun removeFist() {
-
+    fun removeAll() {
+        data.clear()
+        notifyDataSetChanged()
     }
 }
