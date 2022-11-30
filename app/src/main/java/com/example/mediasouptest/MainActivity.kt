@@ -2,16 +2,13 @@ package com.example.mediasouptest
 
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
-import org.mediasoup.droid.lib.LocalDeviceHelper
-import org.mediasoup.droid.lib.PeerConnectionUtils
-import org.webrtc.VideoTrack
 
 class MainActivity : AppCompatActivity() {
     private val mainViewModel by lazy {
@@ -19,6 +16,8 @@ class MainActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainBinding
     lateinit var adapter: PeerAdapter
+
+    lateinit var peersInfoAdapter: PeersInfoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,16 +38,16 @@ class MainActivity : AppCompatActivity() {
         adapter = PeerAdapter {
 
         }
-
-        binding.remotePeers.adapter = adapter
+        peersInfoAdapter = PeersInfoAdapter {
+            Toast.makeText(this, it.peer.id.toString(), Toast.LENGTH_LONG).show()
+        }
+        //binding.remotePeers.adapter = adapter
+        binding.remotePeers.adapter = peersInfoAdapter
     }
 
     private fun initObserver() {
-        mainViewModel.peersLiveData.observe(this) {
-            adapter.setPeers(it)
-        }
-        mainViewModel.onConsumerChange.observe(this) {
-            adapter.onVideoConsumer(it.filter { it.consumer.track is VideoTrack })
+        mainViewModel.peersInfoLiveData.observe(this) {
+            peersInfoAdapter.submitList(it)
         }
     }
 

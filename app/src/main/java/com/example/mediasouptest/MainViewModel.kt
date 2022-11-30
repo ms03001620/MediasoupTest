@@ -6,10 +6,7 @@ import android.os.HandlerThread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mediasouptest.media.ConsumerHolder
-import com.example.mediasouptest.media.LocalDeviceHelper
-import com.example.mediasouptest.media.OnRoomClientEvent
-import com.example.mediasouptest.media.RoomClient
+import com.example.mediasouptest.media.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mediasoup.droid.Producer
@@ -19,6 +16,8 @@ import org.mediasoup.droid.lib.model.Peer
 class MainViewModel : ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
+    val peersInfoLiveData = MutableLiveData<List<PeerInfo>?>()
+    val peersInfoFactory = PeersInfoFactory()
     val joinedLiveData = MutableLiveData<Boolean>()
     var roomClient: RoomClient? = null
     val onConsumerChange = SingleLiveEvent<List<ConsumerHolder>>()
@@ -68,11 +67,16 @@ class MainViewModel : ViewModel() {
 
     private fun createOnRoomClientEvent() = object : OnRoomClientEvent {
         override fun onPeersChange(peers: List<Peer>) {
+            printThread()
             peersLiveData.postValue(peers)
+            peersInfoFactory.syncPeers(peers)
+            peersInfoLiveData.postValue(peersInfoFactory.getCopy())
         }
 
         override fun onConsumersChange(consumers: List<ConsumerHolder>) {
             onConsumerChange.postValue(consumers)
+            peersInfoFactory.updateConsumers(consumers)
+            peersInfoLiveData.postValue(peersInfoFactory.getCopy())
         }
 
         override fun onJoin() {
