@@ -15,8 +15,6 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this, ViewModelFactory())[MainViewModel::class.java]
     }
     lateinit var binding: ActivityMainBinding
-    lateinit var adapter: PeerAdapter
-
     lateinit var peersInfoAdapter: PeersInfoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,9 +33,7 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         binding.remotePeers.layoutManager = LinearLayoutManager(this)
-        adapter = PeerAdapter {
-
-        }
+        binding.remotePeers.itemAnimator = null
         peersInfoAdapter = PeersInfoAdapter {
             Toast.makeText(this, it.peer.id.toString(), Toast.LENGTH_LONG).show()
         }
@@ -68,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
-            adapter.removeAll()
+            peersInfoAdapter.submitList(null)
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
