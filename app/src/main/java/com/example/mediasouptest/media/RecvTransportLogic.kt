@@ -100,7 +100,7 @@ class RecvTransportLogic(
         val consumer = recvTransport?.consume(callback, id, producerId, kind, rtpParameters, appData)
 
         if (consumer != null) {
-            return ConsumerHolder(peerId, consumer, kind)
+            return ConsumerHolder(peerId, consumer, id, producerId, kind)
         } else {
             throw IllegalStateException("recvTransport?.consume null")
         }

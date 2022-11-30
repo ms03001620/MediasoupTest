@@ -5,7 +5,7 @@ import android.util.Log
 import org.mediasoup.droid.BuildConfig
 import org.mediasoup.droid.Consumer
 
-data class ConsumerHolder(val peerId: String, val consumer: Consumer, val kind: String)
+data class ConsumerHolder(val peerId: String, val consumer: Consumer, val id: String, val producerId: String, val kind: String)
 
 //peerId:goaula1r,consumer id:11d82e9d-e46c-4f3c-b790-dbef276ce59e,localId:0,kind:video,track:VideoTrack,isPaused:false,producerId:309d3e5b-4251-4e82-a7f4-7399221a5106
 //peerId:goaula1r,consumer id:efe89a43-d118-4701-a502-9a988ad2e87f,localId:1,kind:audio,track:AudioTrack,isPaused:false,producerId:5f5a1b97-cd35-40b6-8d13-d680a1858402
@@ -15,17 +15,17 @@ fun ConsumerHolder.println(): String {
     sb.append(peerId)
     sb.append(",consumer ")
     sb.append("id:")
-    sb.append(consumer.id)
+    sb.append(id)
     sb.append(",localId:")
-    sb.append(consumer.localId)
+    sb.append("")
     sb.append(",kind:")
-    sb.append(consumer.kind)
+    sb.append(kind)
     sb.append(",track:")
-    sb.append(consumer.track.javaClass.simpleName)
+    sb.append("")
     sb.append(",isPaused:")
-    sb.append(consumer.isPaused)
+    sb.append("")
     sb.append(",producerId:")
-    sb.append(consumer.producerId)
+    sb.append(producerId)
     return sb.toString()
 }
 

@@ -165,6 +165,9 @@ class RoomMessageHandler(var callback: OnRoomClientEvent? = null) : Consumer.Lis
     }
 
     fun release() {
+        mConsumers.clear()
+        mPeers.clear()
+        callback?.onPeersChange(emptyList())
         callback = null
     }
 }

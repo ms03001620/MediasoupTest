@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.initSdk()
         }
         binding.btnEnd.setOnClickListener {
-            peersInfoAdapter.submitList(null)
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {

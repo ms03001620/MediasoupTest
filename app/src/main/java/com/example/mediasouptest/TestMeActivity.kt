@@ -9,7 +9,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.mediasouptest.databinding.ActivityTestMeBinding
 import com.example.mediasouptest.media.println
-import com.example.mediasouptest.widget.VideoWallpaper
 import org.mediasoup.droid.Producer
 import org.mediasoup.droid.lib.PeerConnectionUtils
 import org.webrtc.VideoTrack

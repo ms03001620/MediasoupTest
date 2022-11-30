@@ -40,8 +40,8 @@ class VideoWallpaper(context: Context, attrs: AttributeSet) : FrameLayout(contex
             videoTrack = track
             renderer.init(PeerConnectionUtils.getEglContext(), null)
             track.addSink(renderer)
-            mask.visibility = View.GONE
         }
+        mask.visibility = View.GONE
     }
 
     override fun onAttachedToWindow() {
@@ -51,8 +51,10 @@ class VideoWallpaper(context: Context, attrs: AttributeSet) : FrameLayout(contex
 
     override fun onDetachedFromWindow() {
         Log.d("VideoWallpaper", "onDetachedFromWindow")
-        //videoTrack?.removeSink(renderer)
-        //renderer.release()
+        if (videoTrack != null) {
+            renderer.release()
+            videoTrack=null
+        }
         super.onDetachedFromWindow()
     }
 

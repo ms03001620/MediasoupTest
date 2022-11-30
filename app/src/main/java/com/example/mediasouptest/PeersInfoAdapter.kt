@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mediasouptest.media.ConsumerHolder
 import com.example.mediasouptest.media.println
+import com.example.mediasouptest.widget.VideoWallpaper
 
 class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
     ListAdapter<PeerInfo, PeersInfoAdapter.PeerInfoViewHolder>(PeerInfoDiffCallback) {
@@ -18,6 +19,8 @@ class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
         private val flowerTextView: TextView = itemView.findViewById(R.id.flower_text)
         private val flowerImageView: TextView = itemView.findViewById(R.id.flower_image)
+        private val videoWallpaper: VideoWallpaper = itemView.findViewById(R.id.video_wallpaper)
+
         private var currentPeerInfo: PeerInfo? = null
 
         init {
@@ -34,6 +37,16 @@ class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
 
             flowerTextView.text = peerInfo.peer.id
             flowerImageView.text = getConsumerInfo(peerInfo.consumerHolder)
+
+            loadVideo(peerInfo.consumerHolder)
+        }
+
+        private fun loadVideo(consumerHolder: ConsumerHolder?) {
+            if (consumerHolder == null) {
+                videoWallpaper.hideVideo()
+            } else {
+                videoWallpaper.showVideo(consumerHolder.consumer.track)
+            }
         }
 
         private fun getConsumerInfo(consumerHolder: ConsumerHolder?): String {
