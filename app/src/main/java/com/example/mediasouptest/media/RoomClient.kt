@@ -13,6 +13,7 @@ import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
+import kotlin.system.measureTimeMillis
 
 class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     private lateinit var roomClientConfig: RoomClientConfig
@@ -41,16 +42,19 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
             mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
                 object : ClientRequestHandler {
                     override fun resolve(routerRtpCapabilities: String?) {
-                        deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler, options)
+                        val pass = measureTimeMillis {
+                            deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler, options)
 
-                        val producing = roomClientConfig.roomOptions.isProduce
-                        val consuming = roomClientConfig.roomOptions.isConsume
-                        val tcp = roomClientConfig.roomOptions.isForceTcp
+                            val producing = roomClientConfig.roomOptions.isProduce
+                            val consuming = roomClientConfig.roomOptions.isConsume
+                            val tcp = roomClientConfig.roomOptions.isForceTcp
 
-                        if (producing) deviceLogic?.createSendTransport(tcp)
-                        if (consuming) deviceLogic?.createRecvTransport(tcp)
+                            if (producing) deviceLogic?.createSendTransport(tcp)
+                            if (consuming) deviceLogic?.createRecvTransport(tcp)
 
-                        callback.invoke()// simply to join() logic
+                            callback.invoke()// simply to join() logic
+                        }
+                        Logger.d(TAG, "onOpen pass:${pass}")
                     }
 
                     override fun reject(error: Long, errorReason: String?) {
