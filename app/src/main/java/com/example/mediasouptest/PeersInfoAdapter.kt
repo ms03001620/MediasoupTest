@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mediasouptest.media.ConsumerHolder
+import com.example.mediasouptest.media.ConsumerScore
 import com.example.mediasouptest.media.println
 import com.example.mediasouptest.widget.VideoWallpaper
 
@@ -20,6 +21,7 @@ class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
         private val flowerTextView: TextView = itemView.findViewById(R.id.flower_text)
         private val flowerImageView: TextView = itemView.findViewById(R.id.flower_image)
         private val videoWallpaper: VideoWallpaper = itemView.findViewById(R.id.video_wallpaper)
+        private val textScore: TextView = itemView.findViewById(R.id.textScore)
 
         private var currentPeerInfo: PeerInfo? = null
 
@@ -39,6 +41,12 @@ class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
             flowerImageView.text = getConsumerInfo(peerInfo.consumerHolder)
 
             loadVideo(peerInfo.consumerHolder)
+        }
+
+        fun bindScore(payloads: MutableList<Any>) {
+            payloads.filterIsInstance<ConsumerScore>().firstOrNull()?.let {
+                textScore.text = "Producer:${it.producerScore}, Consumer:${it.score}"
+            }
         }
 
         private fun loadVideo(consumerHolder: ConsumerHolder?) {
@@ -64,6 +72,21 @@ class PeersInfoAdapter(private val onClick: (PeerInfo) -> Unit) :
     override fun onBindViewHolder(holder: PeerInfoViewHolder, position: Int) {
         val peerInfo = getItem(position)
         holder.bind(peerInfo)
+    }
+
+    override fun onBindViewHolder(holder: PeerInfoViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position)
+        } else {
+            holder.bindScore(payloads)
+        }
+    }
+
+    fun updateConsumerScore(consumerScore: ConsumerScore) {
+        val position = currentList.indexOfFirst { it.consumerHolder?.id == consumerScore.consumerId }
+        if (position != -1) {
+            notifyItemChanged(position, consumerScore)
+        }
     }
 }
 

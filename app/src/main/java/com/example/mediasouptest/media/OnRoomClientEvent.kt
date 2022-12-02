@@ -4,4 +4,5 @@ interface OnRoomClientEvent {
     fun onPeersChange(peers: List<org.mediasoup.droid.lib.model.Peer>)
     fun onConsumersChange(consumers: List<ConsumerHolder>)
     fun onJoin()
+    fun onConsumerScore(consumerScore: ConsumerScore)
 }

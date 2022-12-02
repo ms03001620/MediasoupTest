@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <LinearLayout
@@ -23,10 +24,9 @@
             android:text="123" />
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <com.example.mediasouptest.widget.VideoWallpaper
             android:id="@+id/video_wallpaper"
@@ -35,9 +35,16 @@
 
         <com.example.mediasouptest.widget.TestWallpaper
             android:id="@+id/testWallpaper"
+            android:layout_toEndOf="@id/video_wallpaper"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="#0f0" />
-    </LinearLayout>
+        <TextView
+            android:id="@+id/textScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            tools:text="Score:10" />
+    </RelativeLayout>
 
 </LinearLayout>

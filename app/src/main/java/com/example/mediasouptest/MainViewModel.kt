@@ -17,6 +17,7 @@ class MainViewModel : ViewModel() {
     private val roomClientConfig = RoomClientConfig()
     val peersLiveData = MutableLiveData<List<Peer>>()
     val peersInfoLiveData = MutableLiveData<List<PeerInfo>?>()
+    val consumerScoreLiveData = SingleLiveEvent<ConsumerScore>()
     val peersInfoFactory = PeersInfoFactory()
     val joinedLiveData = MutableLiveData<Boolean>()
     var roomClient: RoomClient? = null
@@ -81,6 +82,10 @@ class MainViewModel : ViewModel() {
 
         override fun onJoin() {
             joinedLiveData.postValue(true)
+        }
+
+        override fun onConsumerScore(consumerScore: ConsumerScore) {
+            consumerScoreLiveData.postValue(consumerScore)
         }
     }
 

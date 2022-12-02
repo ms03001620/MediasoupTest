@@ -136,10 +136,16 @@ class RoomMessageHandler(var callback: OnRoomClientEvent? = null) : Consumer.Lis
                 }
             }
             "consumerScore" -> {
-                val consumerId = data.getString("consumerId")
-                val score = data.optJSONArray("score")
-                mConsumers[consumerId]?.let {
-                    //mStore.setConsumerScore(consumerId, score)
+                //method:consumerScore, j:{"consumerId":"0fda3067-2bb2-43c5-a0db-f89714be2d59","score":{"producerScore":7,"producerScores":[7],"score":6}}
+                // https://mediasoup.org/documentation/v3/mediasoup/api/#ConsumerScore
+                val consumerId = data.optString("consumerId", "")
+                if (consumerId.isNotEmpty()) {
+                    val scoreObj = data.optJSONObject("score")
+                    val producerScore = scoreObj.optInt("producerScore", -1)
+                    val score = scoreObj.optInt("score", -1)
+                    callback?.onConsumerScore(ConsumerScore(consumerId, producerScore, score))
+                } else {
+                    Logger.w(TAG, "consumerScore errorData:$data")
                 }
             }
             "dataConsumerClosed" -> {}

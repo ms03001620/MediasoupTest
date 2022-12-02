@@ -45,6 +45,9 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.peersInfoLiveData.observe(this) {
             peersInfoAdapter.submitList(it)
         }
+        mainViewModel.consumerScoreLiveData.observe(this) {
+            peersInfoAdapter.updateConsumerScore(it)
+        }
     }
 
     override fun onDestroy() {
