@@ -1,13 +1,13 @@
 package com.example.mediasouptest.media
 
 import android.os.Handler
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.protoojs.droid.Peer.ClientRequestHandler
-import java.util.concurrent.CountDownLatch
 
 class SendTransportLogic(
     private val protoo: Protoo,
@@ -107,34 +107,17 @@ class SendTransportLogic(
             kind: String?,
             rtpParameters: String?,
             appData: String?
-        ): String {
-            var id = ""
-            val lock = CountDownLatch(1)
-            try {
-                Logger.d(TAG, "onProduce ${transport.id}")
-                val req = JSONObject()
-                req.put("transportId", transport.id)
-                req.put("kind", kind)
-                req.put("rtpParameters", JSONObject(rtpParameters))
-                req.put("appData", appData)
-                protoo.request("produce", req, object : ClientRequestHandler {
-                    override fun resolve(data: String?) {
-                        id = JSONObject(data ?: "").optString("id")
-                        lock.countDown()
-                    }
-
-                    override fun reject(error: Long, errorReason: String?) {
-                        lock.countDown()
-                    }
-                })
-            } catch (e: Exception) {
-                lock.countDown()
-                Logger.e(TAG, "onProduce ${transport.id}", e)
-            }
-            lock.await()
+        ): String = runBlocking {
+            Logger.d(TAG, "onProduce ${transport.id}")
+            val req = JSONObject()
+            req.put("transportId", transport.id)
+            req.put("kind", kind)
+            req.put("rtpParameters", JSONObject(rtpParameters))
+            req.put("appData", appData)
+            val resp = protoo.syncReq("produce", req)
+            val id = resp?.optString("id", "") ?: ""
             assert(id.isNotEmpty())
-            Logger.d(TAG, "onProduce await $id")
-            return id
+            return@runBlocking id
         }
 
         override fun onConnectionStateChange(
