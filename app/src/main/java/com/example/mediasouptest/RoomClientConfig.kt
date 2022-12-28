@@ -60,9 +60,9 @@ class RoomClientConfig {
 
     private fun loadRoomOption(preferences: SharedPreferences) {
         roomOptions = RoomOptions()
-        roomOptions.setProduce(preferences.getBoolean(PRODUCE, true));
-        roomOptions.setConsume(preferences.getBoolean(CONSUME, true));
-        roomOptions.setForceTcp(preferences.getBoolean(FORCE_TCP, false));
+        roomOptions.isProduce = preferences.getBoolean(PRODUCE, true)
+        roomOptions.isConsume = preferences.getBoolean(CONSUME, true)
+        roomOptions.isForceTcp = preferences.getBoolean(FORCE_TCP, false)
     }
 
     private fun loadConfigData(preferences: SharedPreferences) {
