@@ -5,48 +5,42 @@ import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.Protoo
+import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
 class RecvTransportLogic(
     private val protoo: Protoo,
-    private val workHandler: Handler
+    private val workHandler: Handler?
 ) {
     private var recvTransport: RecvTransport? = null
 
-    fun createRecvTransport(device: Device, forceTcp: Boolean): Boolean {
+    suspend fun createRecvTransport(device: Device, forceTcp: Boolean): Boolean {
         val req = JSONObject()
         req.put("forceTcp", forceTcp)
         req.put("producing", false)
         req.put("consuming", true)
-        req.put("sctpCapabilities", "")
 
-        protoo.request("createWebRtcTransport", req, object : Peer.ClientRequestHandler {
-            override fun resolve(data: String?) {
-                val info = JSONObject(data)
+        protoo.syncReq("createWebRtcTransport", req)?.let { info ->
+            Logger.d(TAG, "device#createRecvTransport() $info")
+            val id: String = info.optString("id")
+            val iceParameters: String = info.optString("iceParameters")
+            val iceCandidates: String = info.optString("iceCandidates")
+            val dtlsParameters: String = info.optString("dtlsParameters")
+            val sctpParameters: String = info.optString("sctpParameters")
 
-                Logger.d(TAG, "device#createRecvTransport() $info")
-                val id: String = info.optString("id")
-                val iceParameters: String = info.optString("iceParameters")
-                val iceCandidates: String = info.optString("iceCandidates")
-                val dtlsParameters: String = info.optString("dtlsParameters")
-                val sctpParameters: String = info.optString("sctpParameters")
-
-                recvTransport = device.createRecvTransport(
-                    listener,
-                    id,
-                    iceParameters,
-                    iceCandidates,
-                    dtlsParameters,
-                    DeviceLogic.mocKSctpParameters
-                )
-            }
-
-            override fun reject(error: Long, errorReason: String?) {
-                assert(false, { Logger.e(TAG, "errorReason$errorReason") })
-            }
-        })
-        return true
+            recvTransport = device.createRecvTransport(
+                listener,
+                id,
+                iceParameters,
+                iceCandidates,
+                dtlsParameters,
+                DeviceLogic.mocKSctpParameters
+            )
+            return true
+        } ?: run {
+            return false
+        }
     }
 
     private val listener = object: RecvTransport.Listener{

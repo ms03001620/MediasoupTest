@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.close()
         }
         binding.btnJoin.setOnClickListener {
-
         }
         binding.btnFn.setOnClickListener {
             mainViewModel.openCamera()

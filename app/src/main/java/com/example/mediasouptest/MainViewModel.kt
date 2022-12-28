@@ -41,15 +41,13 @@ class MainViewModel : ViewModel() {
         roomClientConfig.print()
 
         // init worker handler.
-        var handlerThread = HandlerThread("worker")
+        val handlerThread = HandlerThread("worker")
         handlerThread.start()
         mWorkHandler = Handler(handlerThread.getLooper())
     }
 
     fun initSdk() {
-        roomClient = RoomClient(mWorkHandler!!, {
-            join()
-        })
+        roomClient = RoomClient(mWorkHandler, viewModelScope, createOnRoomClientEvent())
         roomClient?.init(roomClientConfig, localDeviceHelper?.createPeerConnectionOptions())
     }
 
@@ -62,7 +60,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun join() {
-        roomClient?.join(createOnRoomClientEvent())
+        //roomClient?.join(createOnRoomClientEvent())
     }
 
 

@@ -5,19 +5,20 @@ import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
 import org.mediasoup.droid.lib.Protoo
+import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.protoojs.droid.Peer.ClientRequestHandler
 import java.util.concurrent.CountDownLatch
 
 class SendTransportLogic(
     private val protoo: Protoo,
-    private val workHandler: Handler
+    private val workHandler: Handler?
 ) {
     private var mSendTransport: SendTransport? = null
     private var selfProducerVideo: Producer? = null
     private var selfProducerAudio: Producer? = null
     private var localDeviceHelper: LocalDeviceHelper? = null
 
-    fun createSendTransport(
+    suspend fun createSendTransport(
         device: Device,
         forceTcp: Boolean,
     ): Boolean {
@@ -27,31 +28,25 @@ class SendTransportLogic(
         req.put("consuming", false)
         req.put("sctpCapabilities", "")
 
-        protoo.request("createWebRtcTransport", req, object : ClientRequestHandler {
-            override fun resolve(data: String?) {
-                val info = JSONObject(data)
+        protoo.syncReq("createWebRtcTransport", req)?.let { info ->
+            val id = info.optString("id")
+            val iceParameters = info.optString("iceParameters")
+            val iceCandidates = info.optString("iceCandidates")
+            val dtlsParameters = info.optString("dtlsParameters")
+            val sctpParameters = info.optString("sctpParameters")
 
-                val id = info.optString("id")
-                val iceParameters = info.optString("iceParameters")
-                val iceCandidates = info.optString("iceCandidates")
-                val dtlsParameters = info.optString("dtlsParameters")
-                val sctpParameters = info.optString("sctpParameters")
-
-                mSendTransport = device.createSendTransport(
-                    listener,
-                    id,
-                    iceParameters,
-                    iceCandidates,
-                    dtlsParameters,
-                    DeviceLogic.mocKSctpParameters
-                )
-            }
-
-            override fun reject(error: Long, errorReason: String?) {
-                assert(false, { Logger.e(TAG, "errorReason$errorReason") })
-            }
-        })
-        return true
+            mSendTransport = device.createSendTransport(
+                listener,
+                id,
+                iceParameters,
+                iceCandidates,
+                dtlsParameters,
+                DeviceLogic.mocKSctpParameters
+            )
+            return true
+        } ?: run {
+            return false
+        }
     }
 
     fun createProducerVideo(
@@ -211,10 +206,6 @@ class SendTransportLogic(
                 }
             }
         )
-    }
-
-    fun testCall() {
-        mSendTransport?.dispose()
     }
 
     companion object {

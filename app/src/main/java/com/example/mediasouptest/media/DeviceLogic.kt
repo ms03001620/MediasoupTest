@@ -8,7 +8,7 @@ import org.protoojs.droid.Message
 class DeviceLogic(
     private val routerRtpCapabilities: String,
     private val protoo: Protoo,
-    private val workHandler: Handler,
+    private val workHandler: Handler?,
     private val options: PeerConnection.Options? = null
 ) {
     private val device = Device()
@@ -45,10 +45,10 @@ class DeviceLogic(
         return sendTransportLogic.createProducerAudio(localDeviceHelper)
     }
 
-    fun createSendTransport(forceTcp: Boolean) =
+    suspend fun createSendTransport(forceTcp: Boolean) =
         sendTransportLogic.createSendTransport(device, forceTcp)
 
-    fun createRecvTransport(forceTcp: Boolean) =
+    suspend fun createRecvTransport(forceTcp: Boolean) =
         recvTransportLogic.createRecvTransport(device, forceTcp)
 
     fun end() {
@@ -61,10 +61,6 @@ class DeviceLogic(
 
     fun onNewConsumer(request: Message.Request,callback: Consumer.Listener?) =
         recvTransportLogic.onNewConsumer(request, callback)
-
-    fun testCall() {
-        sendTransportLogic.testCall()
-    }
 
     companion object{
         const val TAG = "DeviceLogic"

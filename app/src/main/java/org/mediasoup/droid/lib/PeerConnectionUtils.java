@@ -128,6 +128,10 @@ public class PeerConnectionUtils {
             createPeerConnectionFactory(context);
         }
 
+        //WebRtcAudioUtils.setWebRtcBasedNoiseSuppressor ( true );
+        //WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler ( true );
+        //WebRtcAudioUtils.setWebRtcBasedAutomaticGainControl ( true );
+
         mAudioSource = mPeerConnectionFactory.createAudioSource(new MediaConstraints());
     }
 

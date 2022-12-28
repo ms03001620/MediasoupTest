@@ -1,21 +1,25 @@
 package com.example.mediasouptest.media
 
-import android.content.Context
 import android.os.Handler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.PeerConnection
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.JsonUtils.toJsonObject
 import org.mediasoup.droid.lib.Protoo
+import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.mediasoup.droid.lib.UrlFactory
 import org.mediasoup.droid.lib.socket.WebSocketTransport
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
-import org.protoojs.droid.Peer.ClientRequestHandler
-import kotlin.system.measureTimeMillis
 
-class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
+class RoomClient(
+    val workHandler: Handler?,
+    val coroutineScope: CoroutineScope,
+    val onRoomClientEvent: OnRoomClientEvent
+) {
     private lateinit var roomClientConfig: RoomClientConfig
     private var mProtoo: Protoo? = null
     private var deviceLogic: DeviceLogic? = null
@@ -37,30 +41,35 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
     }
 
     private val peerListener = object : Peer.Listener {
-
         override fun onOpen() {
-            mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
-                object : ClientRequestHandler {
-                    override fun resolve(routerRtpCapabilities: String?) {
-                        val pass = measureTimeMillis {
-                            deviceLogic = DeviceLogic(routerRtpCapabilities!!, mProtoo!!, workHandler, options)
+            coroutineScope.launch {
+                val resp = mProtoo?.syncReq("getRouterRtpCapabilities", JSONObject())
 
-                            val producing = roomClientConfig.roomOptions.isProduce
-                            val consuming = roomClientConfig.roomOptions.isConsume
-                            val tcp = roomClientConfig.roomOptions.isForceTcp
+                if (resp != null) {
+                    val routerRtpCapabilities = resp.toString()
+                    deviceLogic = DeviceLogic(routerRtpCapabilities, mProtoo!!, workHandler, options)
 
-                            if (producing) deviceLogic?.createSendTransport(tcp)
-                            if (consuming) deviceLogic?.createRecvTransport(tcp)
+                    val producing = roomClientConfig.roomOptions.isProduce
+                    val consuming = roomClientConfig.roomOptions.isConsume
+                    val tcp = roomClientConfig.roomOptions.isForceTcp
 
-                            callback.invoke()// simply to join() logic
-                        }
-                        Logger.d(TAG, "onOpen pass:${pass}")
+                    if (producing) deviceLogic?.createSendTransport(tcp)
+                    if (consuming) deviceLogic?.createRecvTransport(tcp)
+
+                    val reqss = JSONObject()
+                    reqss.put("displayName", "Ma");
+                    reqss.put("device", roomClientConfig.roomOptions.getDevice().toJSONObject());
+                    reqss.put("rtpCapabilities", toJsonObject(deviceLogic?.getRtpCapabilities()));
+                    reqss.put("sctpCapabilities", "");
+
+                    val joinResp = mProtoo?.syncReq("join", reqss)
+                    if(joinResp!=null){
+                        onRoomClientEvent.onJoin()
+                        roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
+                        roomMessageHandler?.addPeers(joinResp.toString())
                     }
-
-                    override fun reject(error: Long, errorReason: String?) {
-                        assert(false, { Logger.e(TAG, "errorReason$errorReason") })
-                    }
-                })
+                }
+            }
         }
 
         override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
@@ -103,31 +112,6 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
         }
     }
 
-    fun join(onRoomClientEvent: OnRoomClientEvent) {
-        assert(deviceLogic != null)
-        assert(mProtoo != null)
-        mProtoo?.let { protoo ->
-            JSONObject().apply {
-                this.put("displayName", "Ma");
-                this.put("device", roomClientConfig.roomOptions.getDevice().toJSONObject());
-                this.put("rtpCapabilities", toJsonObject(deviceLogic?.getRtpCapabilities()));
-                this.put("sctpCapabilities", "");
-            }.let { json ->
-                protoo.request("join", json, object : ClientRequestHandler {
-                    override fun resolve(data: String?) {
-                        onRoomClientEvent.onJoin()
-                        roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
-                        roomMessageHandler?.addPeers(data)
-                    }
-
-                    override fun reject(error: Long, errorReason: String?) {
-                        assert(false, { Logger.e(TAG, "join") })
-                    }
-                })
-            }
-        }
-    }
-
     fun end() {
         printThread()
         deviceLogic?.end()
@@ -147,24 +131,8 @@ class RoomClient(val workHandler: Handler, val callback: () -> Unit) {
 
     fun closeCamera() = deviceLogic?.closeProducerVideo()
     fun closeMic() = deviceLogic?.closeProducerAudio()
-    fun testCall() {
-        deviceLogic?.testCall()
-    }
-
 
     companion object {
         const val TAG = "RoomClient"
     }
 }
-
-
-/*
-mProtoo?.request("getRouterRtpCapabilities", JSONObject(),
-object : ClientRequestHandler {
-    override fun resolve(routerRtpCapabilities: String?) {
-        deviceLogic?.closeSendT()
-    }
-
-    override fun reject(error: Long, errorReason: String?) {
-    }
-})*/
