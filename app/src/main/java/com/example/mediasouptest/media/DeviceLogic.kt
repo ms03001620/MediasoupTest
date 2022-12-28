@@ -2,12 +2,12 @@ package com.example.mediasouptest.media
 
 import android.os.Handler
 import org.mediasoup.droid.*
-import org.mediasoup.droid.lib.Protoo
 import org.protoojs.droid.Message
+import org.protoojs.droid.Peer
 
 class DeviceLogic(
     private val routerRtpCapabilities: String,
-    private val protoo: Protoo,
+    private val protoo: Peer,
     private val workHandler: Handler?,
     private val options: PeerConnection.Options? = null
 ) {

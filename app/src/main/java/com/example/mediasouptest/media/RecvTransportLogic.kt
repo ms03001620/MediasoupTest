@@ -4,13 +4,12 @@ import android.os.Handler
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
-import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
 class RecvTransportLogic(
-    private val protoo: Protoo,
+    private val protoo: Peer,
     private val workHandler: Handler?
 ) {
     private var recvTransport: RecvTransport? = null

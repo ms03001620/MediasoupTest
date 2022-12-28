@@ -8,7 +8,6 @@ import org.mediasoup.droid.Logger
 import org.mediasoup.droid.PeerConnection
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.JsonUtils.toJsonObject
-import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.mediasoup.droid.lib.UrlFactory
 import org.mediasoup.droid.lib.socket.WebSocketTransport
@@ -21,7 +20,7 @@ class RoomClient(
     val onRoomClientEvent: OnRoomClientEvent
 ) {
     private lateinit var roomClientConfig: RoomClientConfig
-    private var mProtoo: Protoo? = null
+    private var mProtoo: Peer? = null
     private var deviceLogic: DeviceLogic? = null
     private var roomMessageHandler: RoomMessageHandler? = null
     private var options: PeerConnection.Options? = null
@@ -37,7 +36,7 @@ class RoomClient(
                 roomClientConfig.data.forceVp9
             )
         )
-        mProtoo = Protoo(transport, peerListener)
+        mProtoo = Peer(transport, peerListener)
     }
 
     private val peerListener = object : Peer.Listener {

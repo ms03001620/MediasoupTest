@@ -5,12 +5,12 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
-import org.mediasoup.droid.lib.Protoo
 import org.mediasoup.droid.lib.ProtooEx.syncReq
+import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ClientRequestHandler
 
 class SendTransportLogic(
-    private val protoo: Protoo,
+    private val protoo: Peer,
     private val workHandler: Handler?
 ) {
     private var mSendTransport: SendTransport? = null
