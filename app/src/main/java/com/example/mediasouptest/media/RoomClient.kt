@@ -131,6 +131,10 @@ class RoomClient(
     fun closeCamera() = deviceLogic?.closeProducerVideo()
     fun closeMic() = deviceLogic?.closeProducerAudio()
 
+    fun fn() {
+        deviceLogic?.fn()
+    }
+
     companion object {
         const val TAG = "RoomClient"
     }

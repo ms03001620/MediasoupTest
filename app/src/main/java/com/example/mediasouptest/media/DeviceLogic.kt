@@ -57,6 +57,10 @@ class DeviceLogic(
         device.dispose()
     }
 
+    fun fn() {
+        recvTransportLogic.end()
+    }
+
     fun getRtpCapabilities() = rtpCapabilities
 
     fun onNewConsumer(request: Message.Request,callback: Consumer.Listener?) =

@@ -105,10 +105,8 @@ class MainViewModel : ViewModel() {
         roomClient?.closeCamera()
     }
 
-    fun test(c: Context){
-        initLocalDeviceHelper(c)
-        localDeviceHelper?.enableMicImpl()
-        localDeviceHelper?.enableCamImpl()
+    fun fn() {
+        roomClient?.fn()
     }
 
 

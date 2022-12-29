@@ -29,6 +29,13 @@ class RecvTransportLogic(
             val sctpParameters: String = info.optString("sctpParameters")
 
             recvTransport = device.createRecvTransport(
+                /*object: RecvTransport.Listener{
+                    override fun onConnect(transport: Transport?, dtlsParameters: String?) {
+                    }
+
+                    override fun onConnectionStateChange(transport: Transport?, connectionState: String?) {
+                    }
+                }*/
                 listener,
                 id,
                 iceParameters,
@@ -44,6 +51,7 @@ class RecvTransportLogic(
 
     private val listener = object: RecvTransport.Listener{
         override fun onConnect(transport: Transport, dtlsParameters: String?) {
+            Logger.d(TAG, "onConnect: id:${transport.id}")
             val req = JSONObject()
             req.put("transportId", transport.getId())
             req.put("dtlsParameters", JsonUtils.toJsonObject(dtlsParameters))
@@ -60,7 +68,7 @@ class RecvTransportLogic(
         }
 
         override fun onConnectionStateChange(transport: Transport, connectionState: String?) {
-            Logger.w(TAG, "onConnectionStateChange: $connectionState")
+            Logger.w(TAG, "onConnectionStateChange: $connectionState, id:${transport.id}")
         }
     }
 
