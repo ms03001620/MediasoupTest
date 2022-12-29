@@ -46,7 +46,7 @@ class RoomClient(
 
                 if (resp != null) {
                     val routerRtpCapabilities = resp.toString()
-                    deviceLogic = DeviceLogic(routerRtpCapabilities, mProtoo!!, workHandler, options)
+                    deviceLogic = DeviceLogic(routerRtpCapabilities, mProtoo!!, workHandler, coroutineScope, options)
 
                     val producing = roomClientConfig.roomOptions.isProduce
                     val consuming = roomClientConfig.roomOptions.isConsume

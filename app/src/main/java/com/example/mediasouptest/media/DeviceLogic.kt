@@ -1,6 +1,7 @@
 package com.example.mediasouptest.media
 
 import android.os.Handler
+import kotlinx.coroutines.CoroutineScope
 import org.mediasoup.droid.*
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
@@ -9,11 +10,12 @@ class DeviceLogic(
     private val routerRtpCapabilities: String,
     private val protoo: Peer,
     private val workHandler: Handler?,
+    private val coroutineScope: CoroutineScope,
     private val options: PeerConnection.Options? = null
 ) {
     private val device = Device()
     private val sendTransportLogic = SendTransportLogic(protoo, workHandler)
-    private val recvTransportLogic = RecvTransportLogic(protoo, workHandler)
+    private val recvTransportLogic = RecvTransportLogic(protoo, workHandler, coroutineScope)
 
     private val rtpCapabilities: String
 

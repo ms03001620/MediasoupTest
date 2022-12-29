@@ -1,6 +1,7 @@
 package com.example.mediasouptest.media
 
 import android.os.Handler
+import kotlinx.coroutines.CoroutineScope
 import org.json.JSONObject
 import org.mediasoup.droid.*
 import org.mediasoup.droid.lib.JsonUtils
@@ -10,7 +11,8 @@ import org.protoojs.droid.Peer
 
 class RecvTransportLogic(
     private val protoo: Peer,
-    private val workHandler: Handler?
+    private val workHandler: Handler?,
+    private val coroutineScope: CoroutineScope,
 ) {
     private var recvTransport: RecvTransport? = null
 
