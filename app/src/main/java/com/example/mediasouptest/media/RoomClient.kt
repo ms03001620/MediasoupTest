@@ -132,7 +132,9 @@ class RoomClient(
     fun closeMic() = deviceLogic?.closeProducerAudio()
 
     fun fn() {
-        deviceLogic?.fn()
+        coroutineScope.launch {
+            deviceLogic?.fn()
+        }
     }
 
     companion object {

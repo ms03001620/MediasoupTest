@@ -166,7 +166,7 @@ class RoomMessageHandler(var callback: OnRoomClientEvent? = null) : Consumer.Lis
     //Consumer.Listener
     override fun onTransportClose(consumer: Consumer) {
         Logger.d(TAG, "onTransportClose:${consumer.id}")
-        assert(false)// TODO Consumer close by native
+        //  Consumer close by native
         removeClose(consumer)
     }
 

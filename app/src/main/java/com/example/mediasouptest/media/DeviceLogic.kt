@@ -58,7 +58,7 @@ class DeviceLogic(
     }
 
     fun fn() {
-        recvTransportLogic.end()
+        recvTransportLogic.fn()
     }
 
     fun getRtpCapabilities() = rtpCapabilities

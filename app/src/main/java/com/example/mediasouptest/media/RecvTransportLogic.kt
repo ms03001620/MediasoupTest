@@ -78,6 +78,12 @@ class RecvTransportLogic(
         recvTransport = null
     }
 
+    fun fn() {
+        recvTransport?.close()
+        //recvTransport?.dispose()
+        recvTransport = null
+    }
+
     fun onNewConsumer(
         request: Message.Request,
         callback: Consumer.Listener?
