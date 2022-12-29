@@ -7,7 +7,7 @@ import org.json.JSONObject
 import org.mediasoup.droid.Logger
 import org.mediasoup.droid.PeerConnection
 import org.mediasoup.droid.demo.RoomClientConfig
-import org.mediasoup.droid.lib.JsonUtils.toJsonObject
+import org.mediasoup.droid.lib.ProtooEx.syncJoinReq
 import org.mediasoup.droid.lib.ProtooEx.syncReq
 import org.mediasoup.droid.lib.UrlFactory
 import org.mediasoup.droid.lib.socket.WebSocketTransport
@@ -55,13 +55,7 @@ class RoomClient(
                     if (producing) deviceLogic?.createSendTransport(tcp)
                     if (consuming) deviceLogic?.createRecvTransport(tcp)
 
-                    val reqss = JSONObject()
-                    reqss.put("displayName", "Ma");
-                    reqss.put("device", roomClientConfig.roomOptions.getDevice().toJSONObject());
-                    reqss.put("rtpCapabilities", toJsonObject(deviceLogic?.getRtpCapabilities()));
-                    reqss.put("sctpCapabilities", "");
-
-                    val joinResp = mProtoo?.syncReq("join", reqss)
+                    val joinResp = mProtoo?.syncJoinReq(roomClientConfig, deviceLogic)
                     if(joinResp!=null){
                         onRoomClientEvent.onJoin()
                         roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
