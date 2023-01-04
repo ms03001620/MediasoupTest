@@ -46,9 +46,9 @@ class MainViewModel : ViewModel() {
         mWorkHandler = Handler(handlerThread.getLooper())
     }
 
-    fun initSdk() {
+    fun initSdk(initCallback: org.protoojs.droid.Peer.Listener? = null) {
         roomClient = RoomClient(mWorkHandler, viewModelScope, createOnRoomClientEvent())
-        roomClient?.init(roomClientConfig, localDeviceHelper?.createPeerConnectionOptions())
+        roomClient?.init(roomClientConfig, localDeviceHelper?.createPeerConnectionOptions(), initCallback)
     }
 
     fun close() {

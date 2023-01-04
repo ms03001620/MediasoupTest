@@ -24,10 +24,16 @@ class RoomClient(
     private var deviceLogic: DeviceLogic? = null
     private var roomMessageHandler: RoomMessageHandler? = null
     private var options: PeerConnection.Options? = null
+    private var initCallback: Peer.Listener? = null
 
-    fun init(roomClientConfig: RoomClientConfig, options: PeerConnection.Options?) {
+    fun init(
+        roomClientConfig: RoomClientConfig,
+        options: PeerConnection.Options?,
+        initCallback: Peer.Listener? = null
+    ) {
         this.roomClientConfig = roomClientConfig
         this.options = options
+        this.initCallback = initCallback
         val transport = WebSocketTransport(
             UrlFactory.getProtooUrl(
                 /*roomClientConfig.data.roomId*/"c5bwfyow",
@@ -41,6 +47,7 @@ class RoomClient(
 
     private val peerListener = object : Peer.Listener {
         override fun onOpen() {
+            initCallback?.onOpen()
             coroutineScope.launch {
                 val resp = mProtoo?.syncReq("getRouterRtpCapabilities", JSONObject())
 
@@ -66,6 +73,7 @@ class RoomClient(
         }
 
         override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
+            initCallback?.onRequest(request, handler)
             try {
                 Logger.d(TAG, "onRequest${request.method}")
                 when (request.method) {
@@ -85,6 +93,7 @@ class RoomClient(
         }
 
         override fun onNotification(notification: Message.Notification) {
+            initCallback?.onNotification(notification)
             try {
                 roomMessageHandler?.handleNotification(notification)
             } catch (e: Exception) {
@@ -93,14 +102,17 @@ class RoomClient(
         }
 
         override fun onFail() {
-            assert(false, { Logger.e(TAG, "onFail") })
+            initCallback?.onFail()
+            Logger.d(TAG, "onFail() called")
         }
 
         override fun onDisconnected() {
-            assert(false, { Logger.e(TAG, "onDisconnected") })
+            initCallback?.onDisconnected()
+            Logger.d(TAG, "onDisconnected() called")
         }
 
         override fun onClose() {
+            initCallback?.onClose()
             Logger.d(TAG, "onClose() called")
         }
     }

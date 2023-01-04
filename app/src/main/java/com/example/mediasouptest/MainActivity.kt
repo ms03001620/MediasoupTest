@@ -9,6 +9,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
+import org.protoojs.droid.Message
+import org.protoojs.droid.Peer
 
 class MainActivity : AppCompatActivity() {
     private val mainViewModel by lazy {
@@ -64,7 +66,34 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnStart.setOnClickListener {
             mainViewModel.initLocalDeviceHelper(applicationContext)
-            mainViewModel.initSdk()
+            mainViewModel.initSdk(object: Peer.Listener{
+                override fun onOpen() {
+                }
+
+                override fun onFail() {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "onFail", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onRequest(request: Message.Request, handler: Peer.ServerRequestHandler) {
+                }
+
+                override fun onNotification(notification: Message.Notification) {
+                }
+
+                override fun onDisconnected() {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "onDisconnected", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onClose() {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "onClose", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
         }
         binding.btnEnd.setOnClickListener {
             mainViewModel.close()
