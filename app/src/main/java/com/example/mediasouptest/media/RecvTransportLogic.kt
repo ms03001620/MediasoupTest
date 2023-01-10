@@ -42,8 +42,7 @@ class RecvTransportLogic(
                 id,
                 iceParameters,
                 iceCandidates,
-                dtlsParameters,
-                DeviceLogic.mocKSctpParameters
+                dtlsParameters
             )
             return true
         } ?: run {

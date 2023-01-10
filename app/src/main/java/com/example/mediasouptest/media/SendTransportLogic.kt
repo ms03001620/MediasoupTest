@@ -40,8 +40,7 @@ class SendTransportLogic(
                 id,
                 iceParameters,
                 iceCandidates,
-                dtlsParameters,
-                DeviceLogic.mocKSctpParameters
+                dtlsParameters
             )
             return true
         } ?: run {
