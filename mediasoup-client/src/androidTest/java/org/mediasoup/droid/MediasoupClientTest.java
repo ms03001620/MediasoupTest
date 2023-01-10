@@ -1,5 +1,13 @@
 package org.mediasoup.droid;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mediasoup.droid.Utils.exceptionException;
+import static org.mediasoup.droid.data.Parameters.nativeGenTransportRemoteParameters;
+
 import android.text.TextUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -18,14 +26,6 @@ import org.webrtc.VideoTrack;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mediasoup.droid.Utils.exceptionException;
-import static org.mediasoup.droid.data.Parameters.nativeGenTransportRemoteParameters;
 
 @RunWith(AndroidJUnit4.class)
 public class MediasoupClientTest extends BaseTest {
@@ -78,6 +78,8 @@ public class MediasoupClientTest extends BaseTest {
     Consumer audioConsumer;
     Consumer videoConsumer;
     Consumer audioConsumer2;
+
+    DataProducer dataProducer;
 
     // create a Device succeeds.
     {
@@ -166,7 +168,12 @@ public class MediasoupClientTest extends BaseTest {
       recvTransportListener = new FakeTransportListener.FakeRecvTransportListener();
       recvTransport =
           device.createRecvTransport(
-              recvTransportListener, mId, mIceParameters, mIceCandidates, mDtlsParameters, mSctpParameters);
+              recvTransportListener,
+              mId,
+              mIceParameters,
+              mIceCandidates,
+              mDtlsParameters,
+              mSctpParameters);
 
       assertEquals(mId, recvTransport.getId());
       assertFalse(recvTransport.isClosed());
@@ -179,9 +186,12 @@ public class MediasoupClientTest extends BaseTest {
       String appData = "{\"baz\":\"BAZ\"}";
 
       List<RtpParameters.Encoding> encodings = new ArrayList<>();
-      encodings.add(RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 1L, false));
-      encodings.add(RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 2L, false));
-      encodings.add(RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 3L, false));
+      encodings.add(
+          RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 1L, false));
+      encodings.add(
+          RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 2L, false));
+      encodings.add(
+          RTCUtils.genRtpEncodingParameters(null, false, 1.0d, 1, 0, 0, 0, 0, 1.0d, 3L, false));
 
       audioTrack = PeerConnectionUtils.createAudioTrack(mContext, "audio-track-id");
       assertNotEquals(0, RTCUtils.getNativeMediaStreamTrack(audioTrack));
@@ -280,9 +290,31 @@ public class MediasoupClientTest extends BaseTest {
       assertEquals("{}", videoProducer.getAppData());
     }
 
+    // "transport.produceData() succeeds
+    {
+      String appData = "{\"tdr\":\"TDR\"}";
+      dataProducer = sendTransport.produceData(producerListener, "", "", true, 0, 0, appData);
+
+      // connect has already been called for Producer
+      assertEquals(
+          sendTransportListener.mOnConnectTimesCalled,
+          sendTransportListener.mOnConnectExpectedTimesCalled);
+
+      assertEquals(sendTransportListener.mId, sendTransport.getId());
+
+      assertEquals(
+          ++sendTransportListener.mOnProduceDataExpectedTimesCalled,
+          sendTransportListener.mOnProduceDataExpectedTimesCalled);
+
+      assertEquals(dataProducer.getId(), sendTransportListener.mDataProducerId);
+      assertFalse(dataProducer.isClosed());
+      assertEquals(dataProducer.getAppData(), appData);
+    }
+
     // transport.produce() without track throws.
     {
-      exceptionException(() -> sendTransport.produce(producerListener, null, null, null, null, null));
+      exceptionException(
+          () -> sendTransport.produce(producerListener, null, null, null, null, null));
     }
 
     // transport.consume() succeeds.
@@ -615,7 +647,7 @@ public class MediasoupClientTest extends BaseTest {
       assertTrue(videoProducer.isClosed());
       // Audio Producer was already closed.
       assertEquals(
-          ++producerListener.mOnTransportCloseExpetecTimesCalled,
+          ++producerListener.mOnTransportCloseExpectedTimesCalled,
           producerListener.mOnTransportCloseTimesCalled);
 
       // Audio Consumer was already closed.
@@ -633,7 +665,8 @@ public class MediasoupClientTest extends BaseTest {
 
     // transport.produce() throws if closed.
     {
-      exceptionException(() -> sendTransport.produce(producerListener, audioTrack, null, null, null));
+      exceptionException(
+          () -> sendTransport.produce(producerListener, audioTrack, null, null, null));
     }
 
     // transport.consume() throws if closed.

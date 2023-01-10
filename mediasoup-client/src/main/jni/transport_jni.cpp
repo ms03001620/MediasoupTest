@@ -3,6 +3,8 @@
 #include "transport_jni.h"
 #include "Logger.hpp"
 #include "consumer_jni.h"
+#include "data_consumer_jni.h"
+#include "data_producer_jni.h"
 #include "generated_mediasoupclient_jni/jni/RecvTransport_jni.h"
 #include "generated_mediasoupclient_jni/jni/SendTransport_jni.h"
 #include "generated_mediasoupclient_jni/jni/Transport_jni.h"
@@ -48,7 +50,11 @@ std::future<std::string> SendTransportListenerJni::OnProduce(
 }
 
 std::future<std::string> SendTransportListenerJni::OnProduceData(
-		SendTransport* transport, const json& sctpStreamParameters, const std::string& label, const std::string& protocol, const json& appData)
+  SendTransport* transport,
+  const json& sctpStreamParameters,
+  const std::string& label,
+  const std::string& protocol,
+  const json& appData)
 {
 	JNIEnv* env = webrtc::AttachCurrentThreadIfNeeded();
 	auto result = Java_Listener_onProduceData(
@@ -228,14 +234,14 @@ static ScopedJavaLocalRef<jobject> JNI_SendTransport_Produce(
 		if (!j_codecOptions.is_null())
 		{
 			codecOptionsJson = json::parse(JavaToNativeString(env, j_codecOptions));
-			codecOptions = &codecOptionsJson;
+			codecOptions     = &codecOptionsJson;
 		}
 		json* codec = nullptr;
 		json codecJson;
 		if (!j_codec.is_null())
 		{
 			codecJson = json::parse(JavaToNativeString(env, j_codec));
-			codec = &codecJson;
+			codec     = &codecJson;
 		}
 
 		json appData = json::object();
@@ -246,6 +252,50 @@ static ScopedJavaLocalRef<jobject> JNI_SendTransport_Produce(
 		auto transport = (reinterpret_cast<OwnedSendTransport*>(j_transport))->transport();
 		auto producer  = transport->Produce(listener, track, &encodings, codecOptions, codec, appData);
 		return NativeToJavaProducer(env, producer, listener);
+	}
+	catch (const std::exception& e)
+	{
+		MSC_ERROR("%s", e.what());
+		THROW_MEDIASOUP_CLIENT_EXCEPTION(env, e);
+		return nullptr;
+	}
+}
+
+ScopedJavaLocalRef<jobject> JNI_SendTransport_ProduceData(
+  JNIEnv* env,
+  jlong j_transport,
+  const JavaParamRef<jobject>& j_listener,
+  const JavaParamRef<jstring>& j_label,
+  const JavaParamRef<jstring>& j_protocol,
+  jboolean j_ordered,
+  jint j_maxRetransmits,
+  jint j_maxPacketLifeTime,
+  const JavaParamRef<jstring>& j_appData)
+{
+	MSC_TRACE();
+
+	try
+	{
+		auto listener = new DataProducerListenerJni(env, j_listener);
+		std::string label;
+		if (!j_label.is_null())
+		{
+			label = JavaToNativeString(env, j_label);
+		}
+		std::string protocol;
+		if (!j_protocol.is_null())
+		{
+			protocol = JavaToNativeString(env, j_protocol);
+		}
+		json appData = json::object();
+		if (!j_appData.is_null())
+		{
+			appData = json::parse(JavaToNativeString(env, j_appData));
+		}
+		auto transport = (reinterpret_cast<OwnedSendTransport*>(j_transport))->transport();
+		auto producer  = transport->ProduceData(
+      listener, label, protocol, j_ordered, j_maxRetransmits, j_maxPacketLifeTime, appData);
+		return NativeToJavaDataProducer(env, producer, listener);
 	}
 	catch (const std::exception& e)
 	{
@@ -301,6 +351,54 @@ static ScopedJavaLocalRef<jobject> JNI_RecvTransport_Consume(
 		auto transport = (reinterpret_cast<OwnedRecvTransport*>(j_transport))->transport();
 		auto consumer  = transport->Consume(listener, id, producerId, kind, &rtpParameters, appData);
 		return NativeToJavaConsumer(env, consumer, listener);
+	}
+	catch (const std::exception& e)
+	{
+		MSC_ERROR("%s", e.what());
+		THROW_MEDIASOUP_CLIENT_EXCEPTION(env, e);
+		return nullptr;
+	}
+}
+
+static ScopedJavaLocalRef<jobject> JNI_RecvTransport_ConsumeData(
+  JNIEnv* env,
+  jlong j_transport,
+  const JavaParamRef<jobject>& j_listener,
+  const JavaParamRef<jstring>& j_id,
+  const JavaParamRef<jstring>& j_producerId,
+  jlong j_streamId,
+  const JavaParamRef<jstring>& j_label,
+  const JavaParamRef<jstring>& j_protocol,
+  const JavaParamRef<jstring>& j_appData)
+{
+	MSC_TRACE();
+
+	try
+	{
+		auto listener   = new DataConsumerListenerJni(env, j_listener);
+		auto id         = JavaToNativeString(env, j_id);
+		auto producerId = JavaToNativeString(env, j_producerId);
+
+		std::string label;
+		if (!j_label.is_null())
+		{
+			label = JavaToNativeString(env, j_label);
+		}
+		std::string protocol;
+		if (!j_protocol.is_null())
+		{
+			protocol = JavaToNativeString(env, j_protocol);
+		}
+		auto appData = json::object();
+		if (!j_appData.is_null())
+		{
+			appData = json::parse(JavaToNativeString(env, j_appData));
+		}
+
+		auto transport = (reinterpret_cast<OwnedRecvTransport*>(j_transport))->transport();
+		auto consumer =
+		  transport->ConsumeData(listener, id, producerId, j_streamId, label, protocol, appData);
+		return NativeToJavaDataConsumer(env, consumer, listener);
 	}
 	catch (const std::exception& e)
 	{
