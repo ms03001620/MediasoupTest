@@ -9,8 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.mediasouptest.media.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import mediasoupclientlibrary.audio.ARAudioManager
-import mediasoupclientlibrary.audio.ARAudioManager.AudioManagerEvents
 import org.mediasoup.droid.Producer
 import org.mediasoup.droid.demo.RoomClientConfig
 import org.mediasoup.droid.lib.model.Peer
@@ -27,7 +25,7 @@ class MainViewModel : ViewModel() {
     val onProductSelf = SingleLiveEvent<Producer>()
     var localDeviceHelper: LocalDeviceHelper? = null
     private var mWorkHandler: Handler? = null
-    var arAudioManager: ARAudioManager? = null
+    val audioCtrlLiveData = SingleLiveEvent<AudioCtrl>()
 
     fun asyncTask(runnable: () -> Unit) {
 /*        mWorkHandler?.post {
@@ -48,10 +46,10 @@ class MainViewModel : ViewModel() {
         handlerThread.start()
         mWorkHandler = Handler(handlerThread.getLooper())
 
-        arAudioManager = ARAudioManager.create(context)
-        arAudioManager?.start(AudioManagerEvents { selectedAudioDevice, availableAudioDevices ->
-
-        })
+//        arAudioManager = ARAudioManager.create(context)
+//        arAudioManager?.start(AudioManagerEvents { selectedAudioDevice, availableAudioDevices ->
+//            audioCtrlLiveData.postValue(AudioCtrl(""))
+//        })
     }
 
     fun initSdk(initCallback: org.protoojs.droid.Peer.Listener? = null) {
@@ -60,7 +58,6 @@ class MainViewModel : ViewModel() {
     }
 
     fun close() {
-        arAudioManager?.stop()
         // 主线程调用需要直接关闭
         roomClient?.end()
         roomClient = null
@@ -89,6 +86,7 @@ class MainViewModel : ViewModel() {
 
         override fun onJoin() {
             joinedLiveData.postValue(true)
+            audioCtrlLiveData.postValue(AudioCtrl(""))
         }
 
         override fun onConsumerScore(consumerScore: ConsumerScore) {

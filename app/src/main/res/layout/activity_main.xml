@@ -11,18 +11,26 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_testSurfaceViewRenderer"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="testSurfaceViewRenderer" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btn_me"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="testMe" />
+            <Button
+                android:id="@+id/btn_testSurfaceViewRenderer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="testSurfaceViewRenderer" />
 
+            <Button
+                android:id="@+id/btn_me"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="testMe" />
+        </LinearLayout>
+
+
+        <!-- audio ctrl -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,6 +61,68 @@
                 android:text="FN" />
 
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="speaker" />
+
+                <Button
+                    android:id="@+id/btn_speaker_on"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:text="On" />
+
+                <Button
+                    android:id="@+id/btn_speaker_off"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:text="Off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="bluetooth" />
+
+                <Button
+                    android:id="@+id/btn_blue_on"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:text="On" />
+
+                <Button
+                    android:id="@+id/btn_blue_off"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:text="Off" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_audio_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AudioManagerInfo" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/remote_peers"

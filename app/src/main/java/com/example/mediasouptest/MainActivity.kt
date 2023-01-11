@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
+import mediasoupclientlibrary.audio.AudioUtils
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
@@ -25,6 +26,12 @@ class MainActivity : AppCompatActivity() {
         initEvent()
         initConfig()
         initObserver()
+        initAudio()
+    }
+
+    private fun initAudio(){
+        AudioUtils.setAudioMode(this)
+        //audioManager = AppRTCAudioManager.create(applicationContext)
     }
 
     private fun initConfig() {
@@ -50,10 +57,18 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.consumerScoreLiveData.observe(this) {
             peersInfoAdapter.updateConsumerScore(it)
         }
+        mainViewModel.audioCtrlLiveData.observe(this) {
+            binding.btnSpeakerOn.isEnabled = true
+            binding.btnSpeakerOff.isEnabled = true
+            binding.btnBlueOn.isEnabled = true
+            binding.btnBlueOff.isEnabled = true
+            binding.textAudioInfo.text = AudioUtils.AudioManagerInfo(this)
+        }
     }
 
     override fun onDestroy() {
         mainViewModel.close()
+        AudioUtils.restore(this)
         super.onDestroy()
     }
 
@@ -95,6 +110,23 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+
+        binding.btnSpeakerOn.setOnClickListener {
+            AudioUtils.setSpeakerOn(this, true)
+        }
+
+        binding.btnSpeakerOff.setOnClickListener {
+            AudioUtils.setSpeakerOn(this, false)
+        }
+
+        binding.btnBlueOn.setOnClickListener {
+            AudioUtils.setBluetoothOn(this, true)
+        }
+
+        binding.btnBlueOff.setOnClickListener {
+            AudioUtils.setBluetoothOn(this, false)
+        }
+
         binding.btnEnd.setOnClickListener {
             mainViewModel.close()
         }
@@ -103,7 +135,7 @@ class MainActivity : AppCompatActivity() {
             mainViewModel.openMic()
         }
         binding.btnFn.setOnClickListener {
-            mainViewModel.fn()
+            binding.textAudioInfo.text = AudioUtils.AudioManagerInfo(this)
         }
     }
 }
