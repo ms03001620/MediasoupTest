@@ -198,13 +198,24 @@ public class AppRTCBluetoothManager {
     protected AppRTCBluetoothManager(Context context, AppRTCAudioManager audioManager) throws UnsupportedOperationException {
         Log.d(TAG, "ctor");
         ThreadUtils.checkIsOnMainThread();
-        if (bluetoothAdapter == BluetoothAdapter.getDefaultAdapter()) {
-            throw new UnsupportedOperationException("Device does not support Bluetooth");
-        }
         apprtcContext = context;
         apprtcAudioManager = audioManager;
         this.audioManager = getAudioManager(context);
         bluetoothState = State.UNINITIALIZED;
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            throw new UnsupportedOperationException("Device does not support Bluetooth");
+        }
+        // Ensure that the device supports use of BT SCO audio for off call use cases.
+        if (!this.audioManager.isBluetoothScoAvailableOffCall()) {
+            throw new UnsupportedOperationException("Bluetooth SCO audio is not available off call");
+        }
+        if (!hasPermission(apprtcContext, android.Manifest.permission.BLUETOOTH)) {
+            throw new IllegalStateException("Process (pid=" + Process.myPid() + ") lacks BLUETOOTH permission");
+        }
+
+        // Establish a connection to the HEADSET profile (includes both Bluetooth Headset and
+        // Hands-Free) proxy object and install a listener.
         bluetoothServiceListener = new BluetoothServiceListener();
         bluetoothHeadsetReceiver = new BluetoothHeadsetBroadcastReceiver();
         handler = new Handler(Looper.getMainLooper());
@@ -234,9 +245,6 @@ public class AppRTCBluetoothManager {
     public void start() {
         ThreadUtils.checkIsOnMainThread();
         Log.d(TAG, "start");
-        if (!hasPermission(apprtcContext, android.Manifest.permission.BLUETOOTH)) {
-            throw new IllegalStateException("Process (pid=" + Process.myPid() + ") lacks BLUETOOTH permission");
-        }
         if (bluetoothState != State.UNINITIALIZED) {
             throw new IllegalStateException("UNINITIALIZED");
         }
@@ -245,19 +253,13 @@ public class AppRTCBluetoothManager {
         scoConnectionAttempts = 0;
         // Get a handle to the default local Bluetooth adapter.
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        // Ensure that the device supports use of BT SCO audio for off call use cases.
-        if (!audioManager.isBluetoothScoAvailableOffCall()) {
-            Log.e(TAG, "Bluetooth SCO audio is not available off call");
-            return;
-        }
         logBluetoothAdapterInfo(bluetoothAdapter);
-        // Establish a connection to the HEADSET profile (includes both Bluetooth Headset and
-        // Hands-Free) proxy object and install a listener.
+
         if (!getBluetoothProfileProxy(
                 apprtcContext, bluetoothServiceListener, BluetoothProfile.HEADSET)) {
-            Log.e(TAG, "BluetoothAdapter.getProfileProxy(HEADSET) failed");
-            return;
+            throw new IllegalStateException("BluetoothAdapter.getProfileProxy(HEADSET) failed");
         }
+
         // Register receivers for BluetoothHeadset change notifications.
         IntentFilter bluetoothHeadsetFilter = new IntentFilter();
         // Register receiver for change in connection state of the Headset profile.
@@ -265,8 +267,6 @@ public class AppRTCBluetoothManager {
         // Register receiver for change in audio connection state of the Headset profile.
         bluetoothHeadsetFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
         registerReceiver(bluetoothHeadsetReceiver, bluetoothHeadsetFilter);
-        Log.d(TAG, "HEADSET profile state: "
-                + stateToString(bluetoothAdapter.getProfileConnectionState(BluetoothProfile.HEADSET)));
         Log.d(TAG, "Bluetooth proxy for headset profile has started");
         bluetoothState = State.HEADSET_UNAVAILABLE;
         Log.d(TAG, "start done: BT state=" + bluetoothState);
@@ -381,6 +381,7 @@ public class AppRTCBluetoothManager {
         } else {
             // Always use first device in list. Android only supports one device.
             bluetoothDevice = devices.get(0);
+            assert devices.size() == 1;
             bluetoothState = State.HEADSET_AVAILABLE;
             Log.d(TAG, "Connected bluetooth headset: "
                     + "name=" + bluetoothDevice.getName() + ", "
@@ -416,6 +417,23 @@ public class AppRTCBluetoothManager {
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    // Check if any Bluetooth headset is connected. The internal BT state will
+    // change accordingly.
+    public void onUpdateAudioDeviceState() {
+        if (getState() == AppRTCBluetoothManager.State.HEADSET_AVAILABLE
+                || getState() == AppRTCBluetoothManager.State.HEADSET_UNAVAILABLE
+                || getState() == AppRTCBluetoothManager.State.SCO_DISCONNECTING) {
+            updateDevice();
+        }
+    }
+
+
+    public boolean isDeviceEnable() {
+        return getState() == AppRTCBluetoothManager.State.SCO_CONNECTED
+                || getState() == AppRTCBluetoothManager.State.SCO_CONNECTING
+                || getState() == AppRTCBluetoothManager.State.HEADSET_AVAILABLE;
+    }
+
     /**
      * Logs the state of the local Bluetooth adapter.
      */
@@ -439,7 +457,6 @@ public class AppRTCBluetoothManager {
      * Ensures that the audio manager updates its list of available audio devices.
      */
     private void updateAudioDeviceState() {
-        ThreadUtils.checkIsOnMainThread();
         Log.d(TAG, "updateAudioDeviceState");
         apprtcAudioManager.updateAudioDeviceState();
     }
@@ -466,7 +483,6 @@ public class AppRTCBluetoothManager {
      * Called when start of the BT SCO channel takes too long time. Usually
      * happens when the BT device has been turned on during an ongoing call.
      */
-    @SuppressLint("MissingPermission")
     private void bluetoothTimeout() {
         ThreadUtils.checkIsOnMainThread();
         if (bluetoothState == State.UNINITIALIZED || bluetoothHeadset == null) {

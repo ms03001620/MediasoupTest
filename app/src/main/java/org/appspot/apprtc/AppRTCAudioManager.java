@@ -220,9 +220,6 @@ public class AppRTCAudioManager {
         // best possible VoIP performance.
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
-        // Always disable microphone mute during a WebRTC call.
-        setMicrophoneMute(false);
-
         // Set initial device states.
         userSelectedAudioDevice = AudioDevice.NONE;
         selectedAudioDevice = AudioDevice.NONE;
@@ -273,7 +270,7 @@ public class AppRTCAudioManager {
     /**
      * Changes selection of the currently active audio device.
      */
-    private void setAudioDeviceInternal(AudioDevice device) {
+    private AudioDevice setAudioDeviceInternal(AudioDevice device) {
         Log.d(TAG, "setAudioDeviceInternal(device=" + device + ")");
         AppRTCUtils.assertIsTrue(audioDevices.contains(device));
 
@@ -294,7 +291,7 @@ public class AppRTCAudioManager {
                 Log.e(TAG, "Invalid audio device selection");
                 break;
         }
-        selectedAudioDevice = device;
+        return device;
     }
 
     /**
@@ -340,14 +337,6 @@ public class AppRTCAudioManager {
     public Set<AudioDevice> getAudioDevices() {
         ThreadUtils.checkIsOnMainThread();
         return Collections.unmodifiableSet(new HashSet<>(audioDevices));
-    }
-
-    /**
-     * Returns the currently selected audio device.
-     */
-    public AudioDevice getSelectedAudioDevice() {
-        ThreadUtils.checkIsOnMainThread();
-        return selectedAudioDevice;
     }
 
     /**
@@ -434,21 +423,14 @@ public class AppRTCAudioManager {
                 + "selected=" + selectedAudioDevice + ", "
                 + "user selected=" + userSelectedAudioDevice);
 
-        // Check if any Bluetooth headset is connected. The internal BT state will
-        // change accordingly.
-        // TODO(henrika): perhaps wrap required state into BT manager.
-        if (bluetoothManager.getState() == AppRTCBluetoothManager.State.HEADSET_AVAILABLE
-                || bluetoothManager.getState() == AppRTCBluetoothManager.State.HEADSET_UNAVAILABLE
-                || bluetoothManager.getState() == AppRTCBluetoothManager.State.SCO_DISCONNECTING) {
-            bluetoothManager.updateDevice();
-        }
+
+        bluetoothManager.onUpdateAudioDeviceState();
 
         // Update the set of available audio devices.
         Set<AudioDevice> newAudioDevices = new HashSet<>();
 
-        if (bluetoothManager.getState() == AppRTCBluetoothManager.State.SCO_CONNECTED
-                || bluetoothManager.getState() == AppRTCBluetoothManager.State.SCO_CONNECTING
-                || bluetoothManager.getState() == AppRTCBluetoothManager.State.HEADSET_AVAILABLE) {
+
+        if (bluetoothManager.isDeviceEnable()) {
             newAudioDevices.add(AudioDevice.BLUETOOTH);
         }
 
@@ -488,8 +470,7 @@ public class AppRTCAudioManager {
         // user did not select any output device.
         boolean needBluetoothAudioStart =
                 bluetoothManager.getState() == AppRTCBluetoothManager.State.HEADSET_AVAILABLE
-                        && (userSelectedAudioDevice == AudioDevice.NONE
-                        || userSelectedAudioDevice == AudioDevice.BLUETOOTH);
+                        && (userSelectedAudioDevice == AudioDevice.NONE || userSelectedAudioDevice == AudioDevice.BLUETOOTH);
 
         // Need to stop Bluetooth audio if user selected different device and
         // Bluetooth SCO connection is established or in the process.
@@ -507,13 +488,17 @@ public class AppRTCAudioManager {
                     + "BT state=" + bluetoothManager.getState());
         }
 
+        if (needBluetoothAudioStart && needBluetoothAudioStop) {
+            throw new IllegalStateException("check getState error");
+        }
+
         // Start or stop Bluetooth SCO connection given states set earlier.
         if (needBluetoothAudioStop) {
             bluetoothManager.stopScoAudio();
             bluetoothManager.updateDevice();
         }
 
-        if (needBluetoothAudioStart && !needBluetoothAudioStop) {
+        if (needBluetoothAudioStart) {
             // Attempt to start Bluetooth SCO audio (takes a few second to start).
             if (!bluetoothManager.startScoAudio()) {
                 // Remove BLUETOOTH from list of available devices since SCO failed.
@@ -544,7 +529,7 @@ public class AppRTCAudioManager {
         // Switch to new device but only if there has been any changes.
         if (newAudioDevice != selectedAudioDevice || audioDeviceSetUpdated) {
             // Do the required device switch.
-            setAudioDeviceInternal(newAudioDevice);
+            selectedAudioDevice = setAudioDeviceInternal(newAudioDevice);
             Log.d(TAG, "New device status: "
                     + "available=" + audioDevices + ", "
                     + "selected=" + newAudioDevice);
