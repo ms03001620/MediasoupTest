@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.content.Intent
+import android.os.Build
 import android.view.View
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
@@ -20,6 +21,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
     private fun initVersion() {
         val tvVer = findViewById<View>(R.id.text_ver) as TextView
+        tvVer.text = MediasoupClient.version()
     }
 
     private fun enterMain() {
@@ -35,14 +37,23 @@ class SplashScreenActivity : AppCompatActivity() {
             enterMain()
         }
     }
-
     private fun checkPermission() {
-        val permissions = arrayOf(
-            Manifest.permission.INTERNET,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        }
         val rationale = "Please provide permissions"
         val options =
             Permissions.Options().setRationaleDialogTitle("Info").setSettingsDialogTitle("Warning")
