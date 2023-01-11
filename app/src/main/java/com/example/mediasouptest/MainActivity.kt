@@ -2,6 +2,7 @@ package com.example.mediasouptest
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mediasouptest.databinding.ActivityMainBinding
 import mediasoupclientlibrary.audio.AudioUtils
+import org.appspot.apprtc.AppRTCAudioManager
+import org.appspot.apprtc.AppRTCAudioManager.AudioManagerEvents
 import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 
@@ -19,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainBinding
     lateinit var peersInfoAdapter: PeersInfoAdapter
+    private var audioManager: AppRTCAudioManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +33,14 @@ class MainActivity : AppCompatActivity() {
         initAudio()
     }
 
-    private fun initAudio(){
-        AudioUtils.setAudioMode(this)
-        //audioManager = AppRTCAudioManager.create(applicationContext)
+    private fun initAudio() {
+        audioManager = AppRTCAudioManager.create(applicationContext)
+        audioManager?.start(AudioManagerEvents { audioDevice, availableAudioDevices ->
+            Log.d(
+                "MainActivity",
+                "onAudioManagerDevicesChanged: " + availableAudioDevices + ", " + "selected: " + audioDevice
+            )
+        })
     }
 
     private fun initConfig() {
@@ -68,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         mainViewModel.close()
-        AudioUtils.restore(this)
+        audioManager?.stop()
         super.onDestroy()
     }
 
