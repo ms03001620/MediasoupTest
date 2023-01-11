@@ -25,7 +25,6 @@ class MainViewModel : ViewModel() {
     val onProductSelf = SingleLiveEvent<Producer>()
     var localDeviceHelper: LocalDeviceHelper? = null
     private var mWorkHandler: Handler? = null
-    val audioCtrlLiveData = SingleLiveEvent<AudioCtrl>()
 
     fun asyncTask(runnable: () -> Unit) {
 /*        mWorkHandler?.post {
@@ -86,7 +85,6 @@ class MainViewModel : ViewModel() {
 
         override fun onJoin() {
             joinedLiveData.postValue(true)
-            audioCtrlLiveData.postValue(AudioCtrl(""))
         }
 
         override fun onConsumerScore(consumerScore: ConsumerScore) {

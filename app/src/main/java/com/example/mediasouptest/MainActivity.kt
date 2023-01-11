@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     lateinit var peersInfoAdapter: PeersInfoAdapter
     private var audioManager: AppRTCAudioManager? = null
+    private var currentAudioDevice: AppRTCAudioManager.AudioDevice? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,12 +35,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initAudio() {
-        audioManager = AppRTCAudioManager.create(applicationContext)
+        audioManager = AppRTCAudioManager.create(applicationContext, AppRTCAudioManager.AudioDevice.SPEAKER_PHONE)
         audioManager?.start(AudioManagerEvents { audioDevice, availableAudioDevices ->
             Log.d(
                 "MainActivity",
                 "onAudioManagerDevicesChanged: " + availableAudioDevices + ", " + "selected: " + audioDevice
             )
+            currentAudioDevice = audioDevice
+            updateAudioInfoStrings()
         })
     }
 
@@ -66,13 +69,25 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.consumerScoreLiveData.observe(this) {
             peersInfoAdapter.updateConsumerScore(it)
         }
-        mainViewModel.audioCtrlLiveData.observe(this) {
+        mainViewModel.joinedLiveData.observe(this) {
+            mainViewModel.openCamera()
+            mainViewModel.openMic()
+            binding.btnOpenCamMic.isEnabled = false
+
             binding.btnSpeakerOn.isEnabled = true
             binding.btnSpeakerOff.isEnabled = true
             binding.btnBlueOn.isEnabled = true
             binding.btnBlueOff.isEnabled = true
-            binding.textAudioInfo.text = AudioUtils.AudioManagerInfo(this)
+            updateAudioInfoStrings()
         }
+    }
+
+    private fun updateAudioInfoStrings(){
+        binding.textAudioInfo.text = stringsAudioInfo()
+    }
+
+    private fun stringsAudioInfo(): String {
+        return "${AudioUtils.AudioManagerInfo(this)}, current:${currentAudioDevice}"
     }
 
     override fun onDestroy() {
@@ -121,11 +136,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnSpeakerOn.setOnClickListener {
-            AudioUtils.setSpeakerOn(this, true)
+            audioManager?.setDefaultAudioDevice(AppRTCAudioManager.AudioDevice.SPEAKER_PHONE)
         }
 
         binding.btnSpeakerOff.setOnClickListener {
-            AudioUtils.setSpeakerOn(this, false)
+            audioManager?.setDefaultAudioDevice(AppRTCAudioManager.AudioDevice.EARPIECE)
         }
 
         binding.btnBlueOn.setOnClickListener {
@@ -139,12 +154,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnEnd.setOnClickListener {
             mainViewModel.close()
         }
-        binding.btnJoin.setOnClickListener {
-            mainViewModel.openCamera()
-            mainViewModel.openMic()
+        binding.btnOpenCamMic.setOnClickListener {
+
         }
         binding.btnFn.setOnClickListener {
-            binding.textAudioInfo.text = AudioUtils.AudioManagerInfo(this)
+            updateAudioInfoStrings()
         }
     }
 }

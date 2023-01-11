@@ -24,9 +24,6 @@ import org.webrtc.ThreadUtils;
  */
 public class AppRTCAudioManager {
     private static final String TAG = "AppRTCAudioManager";
-    private static final String SPEAKERPHONE_AUTO = "auto";
-    private static final String SPEAKERPHONE_TRUE = "true";
-    private static final String SPEAKERPHONE_FALSE = "false";
 
     /**
      * AudioDevice is the names of possible audio devices that we currently
@@ -77,9 +74,6 @@ public class AppRTCAudioManager {
     // explicit selection based on choice by userSelectedAudioDevice.
     private AudioDevice userSelectedAudioDevice;
 
-    // Contains speakerphone setting: auto, true or false
-    @Nullable
-    private final String useSpeakerphone;
 
     // Handles all tasks related to Bluetooth headset devices.
     private AppRTCBluetoothManager bluetoothManager;
@@ -121,11 +115,11 @@ public class AppRTCAudioManager {
     /**
      * Construction.
      */
-    public static AppRTCAudioManager create(Context context) {
-        return new AppRTCAudioManager(context);
+    public static AppRTCAudioManager create(Context context, AudioDevice defaultAudioDevice) {
+        return new AppRTCAudioManager(context, defaultAudioDevice);
     }
 
-    private AppRTCAudioManager(Context context) {
+    private AppRTCAudioManager(Context context, AudioDevice defaultAudioDevice) {
         Log.d(TAG, "ctor");
         ThreadUtils.checkIsOnMainThread();
         apprtcContext = context;
@@ -138,13 +132,7 @@ public class AppRTCAudioManager {
         wiredHeadsetReceiver = new WiredHeadsetReceiver();
         amState = AudioManagerState.UNINITIALIZED;
 
-        useSpeakerphone = "auto";
-        Log.d(TAG, "useSpeakerphone: " + useSpeakerphone);
-        if (useSpeakerphone.equals(SPEAKERPHONE_FALSE)) {
-            defaultAudioDevice = AudioDevice.EARPIECE;
-        } else {
-            defaultAudioDevice = AudioDevice.SPEAKER_PHONE;
-        }
+        this.defaultAudioDevice = defaultAudioDevice;
 
         Log.d(TAG, "defaultAudioDevice: " + defaultAudioDevice);
         AppRTCUtils.logDeviceInfo(TAG);
@@ -296,7 +284,6 @@ public class AppRTCAudioManager {
 
     /**
      * Changes default audio device.
-     * TODO(henrika): add usage of this method in the AppRTCMobile client.
      */
     public void setDefaultAudioDevice(AudioDevice defaultDevice) {
         ThreadUtils.checkIsOnMainThread();

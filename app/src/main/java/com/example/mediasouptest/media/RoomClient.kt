@@ -64,9 +64,9 @@ class RoomClient(
 
                     val joinResp = mProtoo?.syncJoinReq(roomClientConfig, deviceLogic)
                     if(joinResp!=null){
-                        onRoomClientEvent.onJoin()
                         roomMessageHandler = RoomMessageHandler(onRoomClientEvent)
                         roomMessageHandler?.addPeers(joinResp.toString())
+                        onRoomClientEvent.onJoin()
                     }
                 }
             }

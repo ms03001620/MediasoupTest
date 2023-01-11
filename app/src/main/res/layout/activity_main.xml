@@ -49,7 +49,7 @@
                 android:text="end" />
 
             <Button
-                android:id="@+id/btn_join"
+                android:id="@+id/btn_open_cam_mic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="open cam mic" />
