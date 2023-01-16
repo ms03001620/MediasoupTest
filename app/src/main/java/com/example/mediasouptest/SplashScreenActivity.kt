@@ -1,22 +1,56 @@
 package com.example.mediasouptest
 
 import android.Manifest
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.TextView
+import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import android.view.View
-import com.nabinbhandari.android.permissions.PermissionHandler
-import com.nabinbhandari.android.permissions.Permissions
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import org.mediasoup.droid.MediasoupClient
+import permissions.dispatcher.*
+import permissions.dispatcher.ktx.PermissionsRequester
+import permissions.dispatcher.ktx.constructPermissionsRequest
+
 
 class SplashScreenActivity : AppCompatActivity() {
+    //https://github.com/permissions-dispatcher/PermissionsDispatcher/tree/master/ktx
+    private lateinit var permissionsRequest : PermissionsRequester
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
         initVersion()
-        checkPermission()
+        permissionsRequest = makePermissionsRequester()
+        permissionsRequest.launch()
+    }
+
+    private fun makePermissionsRequester(): PermissionsRequester {
+        val permissions = mutableListOf<String>(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+
+        return constructPermissionsRequest(
+            permissions = permissions.toTypedArray(),
+            onShowRationale = ::showRationaleForCamera,
+            onPermissionDenied = ::onCameraDenied,
+            onNeverAskAgain = ::onCameraNeverAskAgain,
+            requiresPermission = ::enterMain
+        )
     }
 
     private fun initVersion() {
@@ -24,7 +58,12 @@ class SplashScreenActivity : AppCompatActivity() {
         tvVer.text = MediasoupClient.version()
     }
 
-    private fun enterMain() {
+    override fun onResume() {
+        Log.d("SplashScreenActivity", "onResume")
+        super.onResume()
+    }
+
+    fun enterMain() {
         findViewById<View>(R.id.mediasoup).postDelayed({
             //startActivity(Intent(this@SplashScreenActivity, TestMeActivity::class.java))
             startActivity(Intent(this@SplashScreenActivity, MainActivity::class.java))
@@ -32,31 +71,52 @@ class SplashScreenActivity : AppCompatActivity() {
         }, 1500)
     }
 
-    private val permissionHandler: PermissionHandler = object : PermissionHandler() {
-        override fun onGranted() {
-            enterMain()
+/*
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        onRequestPermissionsResult(requestCode, grantResults)
+    }
+*/
+
+    fun showRationaleForCamera(request: PermissionRequest) {
+        AlertDialog.Builder(this)
+            .setTitle("Permission")
+            .setMessage("Voip call camera mic, Please !")
+            .setNegativeButton("Exit", DialogInterface.OnClickListener { dialog, which ->
+                request.cancel()
+            })
+            .setPositiveButton("Setting", DialogInterface.OnClickListener { dialog, which ->
+                request.proceed()
+            })
+            .create()
+            .show()
+    }
+
+    fun onCameraDenied() {
+        Toast.makeText(this, "No Permission to enter", Toast.LENGTH_LONG).show()
+        finish()
+    }
+
+    private val REQ_SETTING = 10010
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_SETTING) {
+            permissionsRequest.launch()
         }
     }
-    private fun checkPermission() {
-        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(
-                Manifest.permission.INTERNET,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.BLUETOOTH_CONNECT
-            )
-        } else {
-            arrayOf(
-                Manifest.permission.INTERNET,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            )
-        }
-        val rationale = "Please provide permissions"
-        val options =
-            Permissions.Options().setRationaleDialogTitle("Info").setSettingsDialogTitle("Warning")
-        Permissions.check(this, permissions, rationale, options, permissionHandler)
+
+    fun onCameraNeverAskAgain() {
+        Snackbar.make(findViewById(android.R.id.content), "Permission has denied. Go Settings?", Snackbar.LENGTH_INDEFINITE)
+            .setAction("SETTINGS") {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivityForResult(intent, REQ_SETTING)
+            }
+            .setTextColor(Color.WHITE)
+            .setActionTextColor(Color.WHITE)
+            .show()
     }
+
 }

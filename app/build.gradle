@@ -58,6 +58,7 @@ dependencies {
     implementation 'com.nabinbhandari.android:permissions:3.8'
     implementation 'org.protoojs.droid:protoo-client:4.0.3'
 
+    implementation "com.github.permissions-dispatcher:ktx:1.1.4"
 
 
     //app-lib
